@@ -1,10 +1,11 @@
 # Tipos de subasta
-- Subasta dinamica ascendente y descendente(normal y normal con precio alta)
+- Subasta dinamica ascendente(normal)
+- Subasta dinamica descendente(se pone un precio muy elevado y se empiezan a hacer ofertas menores)
 - Subasta por tiempo
 - Subasta donde el primero paga lo de el segundo
 - Subasta de servicio o producto de proveedores, elige la mas baja.
 
-# Modelos a implementar
+# Aspectos a implementar
 - Controlador
 - Usuarios
 - Subasta
