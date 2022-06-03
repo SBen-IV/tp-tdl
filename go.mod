@@ -1,4 +1,4 @@
-module github.com/gcaldev
+module tp-tdl
 
 go 1.18
 

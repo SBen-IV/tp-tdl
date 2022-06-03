@@ -5,8 +5,12 @@ import (
 	"net/http"
 	"strconv"
 
+	"tp-tdl/user"
+
 	"github.com/gorilla/mux"
 )
+
+type User user.User
 
 type AppController struct {
 	users      []*User
@@ -74,14 +78,6 @@ func (app *AppController) GetRegisteredAuctions() []*Auction {
 	return app.auctions
 }
 
-type User struct {
-	ID        string `json:"id"`
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-	Username  string `json:"username"`
-	Password  string `json:"password"`
-}
-
 type Auction struct {
 	ID           string  `json:"id"`
 	Seller       *User   `json:"seller"`
@@ -94,24 +90,6 @@ type Auction struct {
 type AuctionType interface {
 	updateOffer() int
 	addParticipant() int
-}
-
-var app AppController
-
-func createUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var user User
-	json.NewDecoder(r.Body).Decode(&user)
-	user.ID = strconv.Itoa(app.GetCurrentUserID())
-	app.IncrementUserID()
-	app.AddNewUser(&user)
-	json.NewEncoder(w).Encode(user)
-}
-
-func getUsers(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	users := app.GetRegisteredUsers()
-	json.NewEncoder(w).Encode(users)
 }
 
 func createAuction(w http.ResponseWriter, r *http.Request) {
@@ -154,13 +132,15 @@ func updateAuctionOffer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var app AppController
+
 func main() {
 	r := mux.NewRouter()
 
 	app = AppController{[]*User{}, []*Auction{}, 0}
 
-	r.HandleFunc("/users", createUser).Methods("POST")
-	r.HandleFunc("/users", getUsers).Methods("GET")
+	r.HandleFunc("/users", user.CreateUser).Methods("POST")
+	r.HandleFunc("/users", user.GetUsers).Methods("GET")
 	r.HandleFunc("/auctions", createAuction).Methods("POST")
 	r.HandleFunc("/auctions", getAuctions).Methods("GET")
 	r.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}", joinAuction).Methods("PUT")
