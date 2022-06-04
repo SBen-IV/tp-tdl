@@ -153,7 +153,7 @@ func main() {
 	private.Use(middleware.AuthUser)
 
 	// Users
-	private.HandleFunc("/user/{id}", user.Profile).Methods("GET")
+	private.HandleFunc("/profile", user.Profile).Methods("GET")
 
 	// Auctions
 	private.HandleFunc("/auctions", createAuction).Methods("POST")
