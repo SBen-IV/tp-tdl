@@ -2,8 +2,10 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
+	"tp-tdl/token"
 )
 
 type User struct {
@@ -14,40 +16,45 @@ type User struct {
 	Password  string `json:"password"`
 }
 
-var users = []User{
-	{
+var users = map[string]User{
+	"mike_j": {
 		ID:        "0",
-		Firstname: "John",
-		Lastname:  "Doe",
-		Username:  "johnny_d",
+		Firstname: "Mike",
+		Lastname:  "Johnson",
+		Username:  "mike_j",
 		Password:  "1234",
+	},
+	"mc_clown": {
+		ID:        "1",
+		Firstname: "Ronald",
+		Lastname:  "McDonald",
+		Username:  "mc_clown",
+		Password:  "burger_king",
 	},
 }
 
-var lastUserID = 0
-
-func userExists(username string) bool {
-	for _, user := range users {
-		if user.Username == username {
-			return true
-		}
-	}
-
-	return false
-}
+var (
+	lastUserID = 0
+)
 
 func validateUser(user User) bool {
 	if len(user.Firstname) == 0 || len(user.Lastname) == 0 || len(user.Username) < 3 || len(user.Password) < 3 {
 		return false
 	}
 
-	return !userExists(user.Username)
+	_, exist := users[user.Username]
+
+	return !exist
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	var newUser User
-	json.NewDecoder(r.Body).Decode(&newUser)
+	err := json.NewDecoder(r.Body).Decode(&newUser)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	if !validateUser(newUser) {
 		w.WriteHeader(http.StatusBadRequest)
@@ -56,14 +63,42 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	newUser.ID = strconv.Itoa(lastUserID)
 	lastUserID++
-	//app.IncrementUserID()
-	//app.AddNewUser(&user)
-	users = append(users, newUser)
-	json.NewEncoder(w).Encode(newUser)
+	users[newUser.Username] = newUser
+	w.WriteHeader(http.StatusOK)
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	// users := app.GetRegisteredUsers()
 	json.NewEncoder(w).Encode(users)
+}
+
+func Login(w http.ResponseWriter, r *http.Request) {
+	//	w.Header().Set("Content-Type", "application/json")
+
+	var user User
+
+	json.NewDecoder(r.Body).Decode(&user)
+
+	expectedUser, validUser := users[user.Username]
+
+	if !validUser || expectedUser.Password != user.Password {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	tokenStr, err := token.CreateToken(expectedUser.Username)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+		return
+	}
+
+	w.Header().Set("Auth-Token", tokenStr)
+	w.WriteHeader(http.StatusAccepted)
+}
+
+func Profile(w http.ResponseWriter, r *http.Request) {
+	username := r.Header.Get("username")
+	w.Write([]byte(fmt.Sprintf("Profile of %v", username)))
 }

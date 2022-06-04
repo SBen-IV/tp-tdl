@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"text/template"
 
+	"tp-tdl/middleware"
 	"tp-tdl/user"
 
 	"github.com/gorilla/mux"
@@ -139,13 +141,42 @@ func main() {
 
 	app = AppController{[]*User{}, []*Auction{}, 0}
 
-	r.HandleFunc("/users", user.CreateUser).Methods("POST")
-	r.HandleFunc("/users", user.GetUsers).Methods("GET")
-	r.HandleFunc("/auctions", createAuction).Methods("POST")
-	r.HandleFunc("/auctions", getAuctions).Methods("GET")
-	r.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}", joinAuction).Methods("PUT")
-	r.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}&newoffer={newoffer}", updateAuctionOffer).Methods("PUT")
-	r.HandleFunc("/auctions", createAuction).Methods("POST")
+	public := r.NewRoute().Subrouter()
+	private := r.NewRoute().Subrouter()
+
+	// Public endpoints
+	public.HandleFunc("/", home).Methods("GET")
+	public.HandleFunc("/users", user.CreateUser).Methods("POST")
+	public.HandleFunc("/login", user.Login).Methods("POST")
+
+	// Private enpoints
+	private.Use(middleware.AuthUser)
+
+	// Users
+	private.HandleFunc("/user/{id}", user.Profile).Methods("GET")
+
+	// Auctions
+	private.HandleFunc("/auctions", createAuction).Methods("POST")
+	private.HandleFunc("/auctions", getAuctions).Methods("GET")
+	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}", joinAuction).Methods("PUT")
+	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}&newoffer={newoffer}", updateAuctionOffer).Methods("PUT")
+	private.HandleFunc("/auctions", createAuction).Methods("POST")
+
+	/* 	r.HandleFunc("/users", user.GetUsers).Methods("GET")
+
+	 */
 
 	http.ListenAndServe(":8000", r)
+}
+
+func home(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	t, err := template.ParseFiles("templates/index.html")
+
+	if err != nil {
+		return
+	}
+
+	t.Execute(w, nil)
 }
