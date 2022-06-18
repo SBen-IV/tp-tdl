@@ -23,6 +23,8 @@ func main() {
 		}
 	}()
 
+	r.PathPrefix("/templates/css/").Handler(http.StripPrefix("/templates/css/", http.FileServer(http.Dir("./templates/css/"))))
+
 	public := r.NewRoute().Subrouter()
 	private := r.NewRoute().Subrouter()
 
@@ -40,6 +42,7 @@ func main() {
 	// Auctions
 	private.HandleFunc("/auctions", app.CreateAuction).Methods("POST")
 	private.HandleFunc("/auctions", app.GetAuctions).Methods("GET")
+	private.HandleFunc("/auctions/auctionid=", app.DeleteAuction).Methods("DELETE")
 	private.HandleFunc("/auctions/auctionid={auctionid}", app.DeleteAuction).Methods("DELETE")
 	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}", app.JoinAuction).Methods("PUT")
 	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}&newoffer={newoffer}", app.UpdateAuctionOffer).Methods("PUT")

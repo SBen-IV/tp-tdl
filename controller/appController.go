@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
-	"text/template"
 	"tp-tdl/token"
 
 	"github.com/gorilla/mux"
@@ -69,7 +69,7 @@ func connectToDB() (*mongo.Client, error) {
 func initializeTemplates() {
 	for key := range templates {
 		file_name := "templates/" + key + ".html"
-		templates[key] = template.Must(template.ParseFiles(file_name))
+		templates[key] = template.Must(template.ParseFiles(file_name, "templates/css/styles.css"))
 	}
 }
 
@@ -181,14 +181,14 @@ func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) 
 func (app *AppController) GetAuctions(w http.ResponseWriter, r *http.Request) {
 	auctions := getAllAuctions(app.db.auctionDB)
 
-	tmpl, err := template.ParseFiles("templates/mainHub.html")
+	/* 	tmpl, err := template.ParseFiles("templates/mainHub.html")
 
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	tmpl.Execute(w, auctions)
+	   	if err != nil {
+	   		w.WriteHeader(http.StatusInternalServerError)
+	   		return
+	   	}
+	*/
+	templates[tmpl_main_hub].Execute(w, auctions)
 }
 
 func (app *AppController) JoinAuction(w http.ResponseWriter, r *http.Request) {
@@ -262,7 +262,9 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Auth-Token", tokenStr)
 	w.WriteHeader(http.StatusAccepted)
-	// http.redirect("/profile")
+	/* 	http.Redirect(w, r, "/auctions", http.StatusAccepted)
+	   	http.RedirectHandler("/auctions", 0) */
+	app.GetAuctions(w, r)
 }
 
 func (app *AppController) Profile(w http.ResponseWriter, r *http.Request) {
@@ -274,13 +276,7 @@ func (app *AppController) Home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	fmt.Println("Hello! world!")
-	/* 	t, err := template.ParseFiles("templates/index.html")
 
-	   	if err != nil {
-	   		return
-	   	}
-
-	   	t.Execute(w, nil) */
 	templates[tmpl_home].Execute(w, nil)
 }
 

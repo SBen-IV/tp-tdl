@@ -9,8 +9,6 @@ import (
 
 type Auction model.Auction
 
-/* type AuctionPageData model.AuctionPageData */
-
 func getAllAuctions(auctions *AuctionDB) AuctionPageData {
 	cur, _ := auctions.collection.Find(ctx, bson.M{})
 	var result AuctionPageData
