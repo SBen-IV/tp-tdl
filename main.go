@@ -1,182 +1,45 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
-	"strconv"
-	"text/template"
 
+	"tp-tdl/controller"
 	"tp-tdl/middleware"
-	"tp-tdl/user"
 
 	"github.com/gorilla/mux"
 )
 
-type User user.User
-
-type AppController struct {
-	users      []*User
-	auctions   []*Auction
-	lastUserID int
-}
-
-func (app *AppController) authUser(currentUser *User) bool {
-	//To be implemented
-	return true
-}
-
-// Same code in FindUserByID & FindAuctionByID
-func (app *AppController) FindUserByID(id string) *User {
-	var foundUser *User
-	users := app.GetRegisteredUsers()
-	for _, user := range users {
-		if user.ID == id {
-			foundUser = user
-			break
-		} else {
-			foundUser = nil
-		}
-	}
-	if foundUser == nil {
-		panic("User is invalid")
-	}
-	return foundUser
-}
-
-func (app *AppController) FindAuctionByID(id string) *Auction {
-	auctions := app.GetRegisteredAuctions()
-	var foundAuction *Auction
-	for _, auction := range auctions {
-		if auction.ID == id {
-			foundAuction = auction
-			break
-		} else {
-			foundAuction = nil
-		}
-	}
-	if foundAuction == nil {
-		panic("Auction is invalid")
-	}
-	return foundAuction
-}
-
-func (app *AppController) GetCurrentUserID() int {
-	return app.lastUserID
-}
-
-func (app *AppController) IncrementUserID() {
-	app.lastUserID++
-}
-
-func (app *AppController) GetRegisteredUsers() []*User {
-	return app.users
-}
-
-func (app *AppController) AddNewUser(newUser *User) {
-	app.users = append(app.users, newUser)
-}
-
-func (app *AppController) GetRegisteredAuctions() []*Auction {
-	return app.auctions
-}
-
-type Auction struct {
-	ID           string  `json:"id"`
-	Seller       *User   `json:"seller"`
-	Participants []*User `json:"participants"`
-	currentOffer int     `json:"currentoffer"`
-	isPublic     bool    `json:"ispublic"`
-	hasStarted   bool    `json:"-"`
-}
-
-type AuctionType interface {
-	updateOffer() int
-	addParticipant() int
-}
-
-func createAuction(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var auction Auction
-	json.NewDecoder(r.Body).Decode(&auction)
-	if auction.Participants == nil {
-		auction.Participants = []*User{auction.Seller}
-	}
-	auctions := app.GetRegisteredAuctions()
-	json.NewEncoder(w).Encode(auctions)
-}
-
-func getAuctions(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	auctions := app.GetRegisteredAuctions()
-	json.NewEncoder(w).Encode(auctions)
-}
-
-func joinAuction(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-	foundAuction := app.FindAuctionByID(params["auctionid"])
-	foundUser := app.FindUserByID(params["userid"])
-	foundAuction.Participants = append(foundAuction.Participants, foundUser)
-}
-
-func updateAuctionOffer(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-	auctionId := params["auctionid"]
-	rawOffer := params["newoffer"]
-	newOffer, err := strconv.Atoi(rawOffer)
-	if err != nil {
-		panic("Received offer is invalid")
-	}
-	auctionToUpdate := app.FindAuctionByID(auctionId)
-	if auctionToUpdate.currentOffer < newOffer {
-		auctionToUpdate.currentOffer = newOffer
-	}
-}
-
-var app AppController
-
 func main() {
 	r := mux.NewRouter()
 
-	app = AppController{[]*User{}, []*Auction{}, 0}
+	app := controller.NewAppController()
+
+	defer app.Disconnect()
 
 	public := r.NewRoute().Subrouter()
 	private := r.NewRoute().Subrouter()
 
 	// Public endpoints
-	public.HandleFunc("/", home).Methods("GET")
-	public.HandleFunc("/users", user.CreateUser).Methods("POST")
-	public.HandleFunc("/login", user.Login).Methods("POST")
+	public.HandleFunc("/", app.Home).Methods("GET")
+	public.HandleFunc("/users", app.CreateUser).Methods("POST")
+	public.HandleFunc("/login", app.Login).Methods("POST")
 
 	// Private enpoints
 	private.Use(middleware.AuthUser)
 
 	// Users
-	private.HandleFunc("/profile", user.Profile).Methods("GET")
+	private.HandleFunc("/profile", app.Profile).Methods("GET")
 
 	// Auctions
-	private.HandleFunc("/auctions", createAuction).Methods("POST")
-	private.HandleFunc("/auctions", getAuctions).Methods("GET")
-	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}", joinAuction).Methods("PUT")
-	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}&newoffer={newoffer}", updateAuctionOffer).Methods("PUT")
-	private.HandleFunc("/auctions", createAuction).Methods("POST")
+	private.HandleFunc("/auctions", app.CreateAuction).Methods("POST")
+	private.HandleFunc("/auctions", app.GetAuctions).Methods("GET")
+	private.HandleFunc("/auctions/auctionid={auctionid}", app.DeleteAuction).Methods("DELETE")
+	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}", app.JoinAuction).Methods("PUT")
+	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}&newoffer={newoffer}", app.UpdateAuctionOffer).Methods("PUT")
 
 	/* 	r.HandleFunc("/users", user.GetUsers).Methods("GET")
 
 	 */
 
 	http.ListenAndServe(":8000", r)
-}
-
-func home(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	t, err := template.ParseFiles("templates/index.html")
-
-	if err != nil {
-		return
-	}
-
-	t.Execute(w, nil)
 }
