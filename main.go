@@ -37,9 +37,5 @@ func main() {
 	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}", app.JoinAuction).Methods("PUT")
 	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}&newoffer={newoffer}", app.UpdateAuctionOffer).Methods("PUT")
 
-	/* 	r.HandleFunc("/users", user.GetUsers).Methods("GET")
-
-	 */
-
 	http.ListenAndServe(":8000", r)
 }
