@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -121,41 +120,6 @@ func NewAppController() *AppController {
 	return &app
 }
 
-// Same code in FindUserByID & FindAuctionByID
-func (app *AppController) FindUserByID(id string) *User {
-	var foundUser *User
-	/* 	users := app.GetRegisteredUsers()
-	   	for _, user := range users {
-	   		if user.ID == id {
-	   			foundUser = user
-	   			break
-	   		} else {
-	   			foundUser = nil
-	   		}
-	   	}
-	   	if foundUser == nil {
-	   		panic("User is invalid")
-	   	} */
-	return foundUser
-}
-
-func (app *AppController) FindAuctionByID(id string) *Auction {
-	/* 	auctions := app.GetRegisteredAuctions() */
-	var foundAuction *Auction
-	/* 	for _, auction := range auctions {
-	   		if auction.ID == id {
-	   			foundAuction = auction
-	   			break
-	   		} else {
-	   			foundAuction = nil
-	   		}
-	   	}
-	   	if foundAuction == nil {
-	   		panic("Auction is invalid")
-	   	} */
-	return foundAuction
-}
-
 type AuctionType interface {
 	updateOffer() int
 	addParticipant() int
@@ -165,10 +129,21 @@ type AuctionType interface {
 /* ============================================================================================= */
 /* ============================================================================================= */
 
+func (app *AppController) GetAuctionForm(w http.ResponseWriter, r *http.Request) {
+	templates[tmpl_new_auction].Execute(w, nil)
+}
+
+func (app *AppController) GetAuction(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var auction Auction
-	json.NewDecoder(r.Body).Decode(&auction)
+	var auction = Auction{
+		Title:       r.FormValue("title"),
+		Description: r.FormValue("description"),
+		SellerID:    r.Header.Get("user_id"),
+	}
 
 	createAuction(app.db.auctionDB, auction)
 	/* 	if auction.Participants == nil {
@@ -178,25 +153,10 @@ func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) 
 	/* 	json.NewEncoder(w).Encode(auctions) */
 }
 
-func (app *AppController) GetAuctions(w http.ResponseWriter, r *http.Request) {
+func (app *AppController) GetAllAuctions(w http.ResponseWriter, r *http.Request) {
 	auctions := getAllAuctions(app.db.auctionDB)
 
-	/* 	tmpl, err := template.ParseFiles("templates/mainHub.html")
-
-	   	if err != nil {
-	   		w.WriteHeader(http.StatusInternalServerError)
-	   		return
-	   	}
-	*/
 	templates[tmpl_main_hub].Execute(w, auctions)
-}
-
-func (app *AppController) JoinAuction(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	/* 	params := mux.Vars(r)
-	 	foundAuction := App.FindAuctionByID(params["auctionid"])
-		foundUser := App.FindUserByID(params["userid"])
-		foundAuction.Participants = append(foundAuction.Participants, foundUser) */
 }
 
 func (app *AppController) UpdateAuctionOffer(w http.ResponseWriter, r *http.Request) {
@@ -228,12 +188,11 @@ func (app *AppController) DeleteAuction(w http.ResponseWriter, r *http.Request) 
 */
 
 func (app *AppController) CreateUser(w http.ResponseWriter, r *http.Request) {
-	var newUser User
-	err := json.NewDecoder(r.Body).Decode(&newUser)
-
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	var newUser = User{
+		Firstname: r.FormValue("firstname"),
+		Lastname:  r.FormValue("lastname"),
+		Username:  r.FormValue("username"),
+		Password:  r.FormValue("password"),
 	}
 
 	status, msg := addNewUser(app.db.userDB, newUser)
@@ -248,12 +207,12 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 		Password: r.FormValue("password"),
 	}
 
-	if !loginUser(app.db.userDB, user) {
+	if !loginUser(app.db.userDB, &user) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	tokenStr, err := token.CreateToken(user.Username)
+	tokenStr, err := token.CreateToken(user.ID)
 
 	if err != nil {
 		fmt.Println(err)
@@ -264,7 +223,7 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 	/* 	http.Redirect(w, r, "/auctions", http.StatusAccepted)
 	   	http.RedirectHandler("/auctions", 0) */
-	app.GetAuctions(w, r)
+	app.GetAllAuctions(w, r)
 }
 
 func (app *AppController) Profile(w http.ResponseWriter, r *http.Request) {

@@ -5,15 +5,15 @@ import (
 )
 
 type Claims struct {
-	Username string `json:"username"`
+	UserID string `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
 var jwtKey = []byte("secret-key")
 
-func CreateToken(username string) (string, error) {
+func CreateToken(user_id string) (string, error) {
 	claims := Claims{
-		Username: username,
+		UserID: user_id,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer: "The Blues",
 		},
