@@ -2,13 +2,18 @@ package controller
 
 import (
 	"fmt"
+	"tp-tdl/model"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func getAllAuctions(auctions *AuctionDB) []Auction {
+type Auction model.Auction
+
+/* type AuctionPageData model.AuctionPageData */
+
+func getAllAuctions(auctions *AuctionDB) AuctionPageData {
 	cur, _ := auctions.collection.Find(ctx, bson.M{})
-	var result []Auction
+	var result AuctionPageData
 	for cur.Next(ctx) {
 		var auc Auction
 		err := cur.Decode(&auc)
@@ -18,7 +23,7 @@ func getAllAuctions(auctions *AuctionDB) []Auction {
 			return result
 		}
 
-		result = append(result, auc)
+		result.Auctions = append(result.Auctions, auc)
 	}
 
 	fmt.Println(result)

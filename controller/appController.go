@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"text/template"
-	"tp-tdl/model"
 	"tp-tdl/token"
 
 	"github.com/gorilla/mux"
@@ -15,8 +14,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-type Auction model.Auction
 
 var ctx = context.TODO()
 
@@ -40,7 +37,23 @@ type AppController struct {
 	db *Database
 }
 
-func NewAppController() *AppController {
+type AuctionPageData struct {
+	Auctions []Auction
+}
+
+const (
+	tmpl_home        = "index"
+	tmpl_main_hub    = "mainHub"
+	tmpl_new_auction = "newAuction"
+)
+
+var templates = map[string]*template.Template{
+	tmpl_home:        nil,
+	tmpl_main_hub:    nil,
+	tmpl_new_auction: nil,
+}
+
+func connectToDB() (*mongo.Client, error) {
 	err := godotenv.Load()
 
 	if err != nil {
@@ -50,14 +63,26 @@ func NewAppController() *AppController {
 	user_db, password_db, uri_db := os.Getenv("USER_DB"), os.Getenv("PASSWORD_DB"), os.Getenv("URI_DB")
 	uri := fmt.Sprintf(uri_db, user_db, password_db)
 
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	return mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+}
+
+func initializeTemplates() {
+	for key := range templates {
+		file_name := "templates/" + key + ".html"
+		templates[key] = template.Must(template.ParseFiles(file_name))
+	}
+}
+
+func NewAppController() *AppController {
+	initializeTemplates()
+
+	client, err := connectToDB()
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Connected to db")
-	client.Database("the_blues").Collection("users")
+	fmt.Println("Connected to DB")
 
 	/* 	coll := client.Database("the_blues").Collection("users")
 	   	var result User
@@ -92,6 +117,7 @@ func NewAppController() *AppController {
 			},
 		},
 	}
+
 	return &app
 }
 
@@ -217,9 +243,10 @@ func (app *AppController) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
-	var user User
-
-	json.NewDecoder(r.Body).Decode(&user)
+	var user = User{
+		Username: r.FormValue("username"),
+		Password: r.FormValue("password"),
+	}
 
 	if !loginUser(app.db.userDB, user) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -247,16 +274,19 @@ func (app *AppController) Home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	fmt.Println("Hello! world!")
-	t, err := template.ParseFiles("templates/index.html")
+	/* 	t, err := template.ParseFiles("templates/index.html")
 
-	if err != nil {
-		return
-	}
+	   	if err != nil {
+	   		return
+	   	}
 
-	t.Execute(w, nil)
+	   	t.Execute(w, nil) */
+	templates[tmpl_home].Execute(w, nil)
 }
 
 func (app *AppController) Disconnect() error {
 	fmt.Println("Disconnecting DB...")
-	return app.db.client.Disconnect(ctx)
+	err := app.db.client.Disconnect(ctx)
+	fmt.Println("DB disconnected.")
+	return err
 }
