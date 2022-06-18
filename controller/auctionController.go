@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func getAllAuctions(auctions AuctionDB) []Auction {
+func getAllAuctions(auctions *AuctionDB) []Auction {
 	cur, _ := auctions.collection.Find(ctx, bson.M{})
 	var result []Auction
 	for cur.Next(ctx) {
@@ -26,12 +26,12 @@ func getAllAuctions(auctions AuctionDB) []Auction {
 	return result
 }
 
-func deleteAuction(auctions AuctionDB, auction_id string) {
+func deleteAuction(auctions *AuctionDB, auction_id string) {
 	cur := auctions.collection.FindOneAndDelete(ctx, bson.M{"id": auction_id})
 	fmt.Println(cur)
 }
 
-func createAuction(auctions AuctionDB, auction Auction) {
+func createAuction(auctions *AuctionDB, auction Auction) {
 	// Validar campos
 
 	cur, err := auctions.collection.InsertOne(ctx, auction)

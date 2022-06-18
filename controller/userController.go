@@ -20,7 +20,7 @@ func isValidUser(user User) bool {
 	return true
 }
 
-func validateAndInsertUser(users UserDB, newUser User) (int, string) {
+func validateAndInsertUser(users *UserDB, newUser User) (int, string) {
 	// users lock
 	result := users.collection.FindOne(ctx, bson.M{"username": newUser.Username})
 
@@ -42,7 +42,7 @@ func validateAndInsertUser(users UserDB, newUser User) (int, string) {
 	return http.StatusOK, ""
 }
 
-func addNewUser(users UserDB, newUser User) (int, string) {
+func addNewUser(users *UserDB, newUser User) (int, string) {
 	if !isValidUser(newUser) {
 		return http.StatusBadRequest, "Datos inválidos"
 	}
@@ -54,7 +54,7 @@ func addNewUser(users UserDB, newUser User) (int, string) {
 	return http.StatusOK, "OK"
 }
 
-func loginUser(users UserDB, user User) bool {
+func loginUser(users *UserDB, user User) bool {
 	var expectedUser User
 	// users lock
 	validUser := users.collection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&expectedUser)

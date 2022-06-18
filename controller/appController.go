@@ -32,12 +32,12 @@ type AuctionDB struct {
 
 type Database struct {
 	client    *mongo.Client
-	userDB    UserDB
-	auctionDB AuctionDB
+	userDB    *UserDB
+	auctionDB *AuctionDB
 }
 
 type AppController struct {
-	db Database
+	db *Database
 }
 
 func NewAppController() *AppController {
@@ -80,13 +80,13 @@ func NewAppController() *AppController {
 	   	fmt.Printf("%s\n", jsonData) */
 
 	app := AppController{
-		db: Database{
+		db: &Database{
 			client: client,
-			userDB: UserDB{
+			userDB: &UserDB{
 				collection: client.Database("the_blues").Collection("users"),
 				// Add mutex
 			},
-			auctionDB: AuctionDB{
+			auctionDB: &AuctionDB{
 				collection: client.Database("the_blues").Collection("auctions"),
 				// Add mutex
 			},
