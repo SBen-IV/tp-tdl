@@ -46,10 +46,11 @@
             <section class="galeria">
                 <h3 class="banner">Get your favourite things!</h3>
                 <div class="itemsTotal">
-                {{range .auctions}}
+                {{range .Auctions}}
                   <div class="item">
                     <p>{{.Title}}</p>
-                    <picture><a href=""><img class="bordesRedondeados" src={{.Image}} alt="" height="216" width="216"></a></picture>
+                    <p>{{.Description}}</p>
+                    <!-- <picture><a href=""><img class="bordesRedondeados" src="" alt="" height="216" width="216"></a></picture> -->
                   </div>
                 {{end}}
                   <!--<div class="item">
