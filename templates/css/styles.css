@@ -1,0 +1,116 @@
+body {
+    margin: 0;
+    background: #1b2927;
+    font: normal bold "Work Sans", sans-serif;
+    font-weight: 300;
+    color: whitesmoke; }
+  
+  .encabezado {
+    background-color: #55d6aa;
+    grid-area: nav;
+    background-image: linear-gradient(315deg, #01baef 0%, #55d6aa 30%); }
+  
+  .encabezado::after {
+    content: '';
+    display: table;
+    clear: both;
+    padding-bottom: 15px; }
+  
+  .encabezado__logo {
+    color: #ff1493;
+    padding: 10px 10px;
+    font-family: Tourney;
+    display: inline-block;
+    margin: 0px;
+    padding: 0px;
+    animation-name: iniciaPagina;
+    animation-iteration-count: 3;
+    animation-duration: 1s;
+    animation-timing-function: ease-in-out; }
+  
+  .cuerpoCarousel {
+    margin-top: 20px; }
+  
+  .textoSombreado {
+    text-shadow: 2px 2px #000; }
+  
+  .cuerpoVideo {
+    width: 100%;
+    height: 200px;
+    margin-bottom: 40px; }
+  
+  .cuerpoVideo__texto {
+    font-family: Tourney;
+    color: #55d6aa;
+    font-size: 24px; }
+  
+  .pieDePag {
+    color: whitesmoke;
+    background-color: #01baef;
+    background-image: linear-gradient(315deg, #01baef 0%, #2a2a72 74%);
+    transform: translateY(50px); }
+  
+  .anuncio {
+    text-align: center;
+    margin: 100px;
+    font-family: Tourney;
+    color: #55d6aa;
+    text-transform: uppercase; }
+  
+  section {
+    width: 80%;
+    margin: 0 auto; }
+    section h2 {
+      color: whitesmoke; }
+    section table {
+      color: whitesmoke; }
+  
+  .formulario {
+    margin-top: 20px; }
+  
+  .bordesRedondeados {
+    border-radius: 10px; }
+  
+  .banner {
+    text-align: center;
+    margin: 20px;
+    color: #55d6aa;
+    font-family: Tourney; }
+  
+  .galeria .itemsTotal {
+    padding: 20px;
+    display: flex;
+    flex-flow: wrap;
+    justify-content: center; }
+    .galeria .itemsTotal .item {
+      width: 250px;
+      height: 300px;
+      text-align: center;
+      flex-direction: row;
+      margin: 20px;
+      padding: 15px;
+      text-transform: uppercase;
+      transition: transform 250ms;
+      box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25);
+      -webkit-box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25);
+      -moz-box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25); }
+    .galeria .itemsTotal .item:hover {
+      transform: scale(1.1); }
+  
+  .tabla {
+    border: solid;
+    border-width: 1;
+    margin-bottom: 60px; }
+  
+  .tabla__titulo {
+    color: #55d6aa;
+    font-family: Tourney;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 16px; }
+  
+  @keyframes iniciaPagina {
+    0% { }
+    50% {
+      color: darkred; }
+    100% { } }
