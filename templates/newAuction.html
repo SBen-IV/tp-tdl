@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <title>New Auction</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="./css/styles.css">
@@ -60,7 +63,7 @@
                         <div class="row">
                             <div class="col-md-12 form-group mb-3">
                               <label for="currentoffer" class="col-form-label">Starting Price</label>
-                              <input type="password" class="form-control" name="currentoffer" id="currentoffer" placeholder="$1000" required>
+                              <input type="number" class="form-control" name="currentoffer" id="currentoffer" placeholder="$1000" required>
                             </div>
                         </div>
                         <div class="row">
@@ -70,7 +73,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <p>The best picture of your product<br><input type="file" name="datafile" size="40"></p>
+                            <p>Product image URL<br><input type="text" name="datafile" size="40" required></p>
                         </div>
                         <div class="row">
                             <div class="col-md-6 form-group mb-3">

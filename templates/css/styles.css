@@ -1,61 +1,18 @@
 body {
     margin: 0;
-    background: #1b2927;
+    background: rgba(38, 118, 197, 0.603);
     font: normal bold "Work Sans", sans-serif;
     font-weight: 300;
     color: whitesmoke; }
   
-  .encabezado {
-    background-color: #55d6aa;
-    grid-area: nav;
-    background-image: linear-gradient(315deg, #01baef 0%, #55d6aa 30%); }
-  
-  .encabezado::after {
-    content: '';
-    display: table;
-    clear: both;
-    padding-bottom: 15px; }
-  
-  .encabezado__logo {
-    color: #ff1493;
-    padding: 10px 10px;
-    font-family: Tourney;
-    display: inline-block;
-    margin: 0px;
-    padding: 0px;
-    animation-name: iniciaPagina;
-    animation-iteration-count: 3;
-    animation-duration: 1s;
-    animation-timing-function: ease-in-out; }
-  
-  .cuerpoCarousel {
-    margin-top: 20px; }
-  
   .textoSombreado {
     text-shadow: 2px 2px #000; }
-  
-  .cuerpoVideo {
-    width: 100%;
-    height: 200px;
-    margin-bottom: 40px; }
-  
-  .cuerpoVideo__texto {
-    font-family: Tourney;
-    color: #55d6aa;
-    font-size: 24px; }
   
   .pieDePag {
     color: whitesmoke;
     background-color: #01baef;
     background-image: linear-gradient(315deg, #01baef 0%, #2a2a72 74%);
     transform: translateY(50px); }
-  
-  .anuncio {
-    text-align: center;
-    margin: 100px;
-    font-family: Tourney;
-    color: #55d6aa;
-    text-transform: uppercase; }
   
   section {
     width: 80%;
@@ -91,6 +48,7 @@ body {
       padding: 15px;
       text-transform: uppercase;
       transition: transform 250ms;
+      background: #2a2a72;
       box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25);
       -webkit-box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25);
       -moz-box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25); }
