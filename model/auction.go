@@ -7,10 +7,6 @@ type Auction struct {
 	Seller       User   `json:"seller" bson:"seller"`
 	Participants []User `json:"participants" bson:"participants"`
 	CurrentOffer int    `json:"currentoffer" bson:"current_offer"`
-	IsTimed      bool   `json:"ispublic" bson:"is_public"`
+	IsTimed      bool   `json:"is_timed" bson:"is_timed"`
 	HasEnded     bool   `json:"-" bson:"has_started"`
-}
-
-type AuctionPageData struct {
-	Auctions []Auction
 }
