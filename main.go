@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"net/http"
+	"os"
 
 	"tp-tdl/controller"
 	"tp-tdl/middleware"
@@ -14,7 +16,12 @@ func main() {
 
 	app := controller.NewAppController()
 
-	defer app.Disconnect()
+	defer func() {
+		err := app.Disconnect()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	public := r.NewRoute().Subrouter()
 	private := r.NewRoute().Subrouter()
@@ -37,5 +44,14 @@ func main() {
 	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}", app.JoinAuction).Methods("PUT")
 	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}&newoffer={newoffer}", app.UpdateAuctionOffer).Methods("PUT")
 
-	http.ListenAndServe(":8000", r)
+	go http.ListenAndServe(":8000", r)
+
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "q" {
+			break
+		}
+	}
 }
