@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"strconv"
 	"tp-tdl/token"
 
 	"github.com/gorilla/mux"
@@ -139,18 +140,26 @@ func (app *AppController) GetAuction(w http.ResponseWriter, r *http.Request) {
 
 func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var auction = Auction{
-		Title:       r.FormValue("title"),
-		Description: r.FormValue("description"),
-		SellerID:    r.Header.Get("user_id"),
+	curr_offer, _ := strconv.Atoi(r.FormValue("currentoffer"))
+	var is_timed = false
+
+	if r.FormValue("auctionType") == "timed" {
+		is_timed = true
 	}
 
-	createAuction(app.db.auctionDB, auction)
-	/* 	if auction.Participants == nil {
-		auction.Participants = []*User{auction.Seller}
-	} */
-	/* 	auctions := app.GetRegisteredAuctions() */
-	/* 	json.NewEncoder(w).Encode(auctions) */
+	var auction = Auction{
+		Title:        r.FormValue("title"),
+		Description:  r.FormValue("description"),
+		SellerID:     r.Header.Get("user_id"),
+		CurrentOffer: curr_offer,
+		IsTimed:      is_timed,
+		HasEnded:     false,
+		ImageURL:     r.FormValue("imageurl"),
+	}
+
+	status := createAuction(app.db.auctionDB, &auction)
+
+	w.WriteHeader(status)
 }
 
 func (app *AppController) GetAllAuctions(w http.ResponseWriter, r *http.Request) {

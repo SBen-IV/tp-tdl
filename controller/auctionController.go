@@ -2,8 +2,10 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
 	"tp-tdl/model"
 
+	"github.com/segmentio/ksuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -34,10 +36,16 @@ func deleteAuction(auctions *AuctionDB, auction_id string) {
 	fmt.Println(cur)
 }
 
-func createAuction(auctions *AuctionDB, auction Auction) {
+func createAuction(auctions *AuctionDB, auction *Auction) int {
 	// Validar campos
 
-	cur, err := auctions.collection.InsertOne(ctx, auction)
-	fmt.Println(err)
-	fmt.Println(cur)
+	auction.ID = ksuid.New().String()
+
+	_, err := auctions.collection.InsertOne(ctx, auction)
+
+	if err != nil {
+		return http.StatusInternalServerError
+	}
+
+	return http.StatusOK
 }
