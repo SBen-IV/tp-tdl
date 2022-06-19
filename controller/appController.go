@@ -135,7 +135,9 @@ func (app *AppController) GetAuctionForm(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *AppController) GetAuction(w http.ResponseWriter, r *http.Request) {
+	auctions := getAuction(app.db.auctionDB)
 
+	templates[tmpl_main_hub].Execute(w, auctions)
 }
 
 func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) {
@@ -216,7 +218,7 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 		Password: r.FormValue("password"),
 	}
 
-	if !loginUser(app.db.userDB, &user) {
+	if !loginUser(app.db.userDB, user) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
