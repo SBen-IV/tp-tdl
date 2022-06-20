@@ -236,7 +236,10 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
+	session.Values["authorize"] = true
 	session.Values["user_id"] = user_id
+
+	session.Save(r, w)
 
 	//w.Header().Set("Auth-Token", tokenStr)
 	w.WriteHeader(http.StatusAccepted)
