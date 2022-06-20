@@ -2,6 +2,7 @@ package token
 
 import (
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/gorilla/sessions"
 )
 
 type Claims struct {
@@ -10,6 +11,8 @@ type Claims struct {
 }
 
 var jwtKey = []byte("secret-key")
+
+var Store = sessions.NewCookieStore([]byte("secret-key"))
 
 func CreateToken(user_id string) (string, error) {
 	claims := Claims{

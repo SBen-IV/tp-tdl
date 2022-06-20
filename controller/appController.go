@@ -222,16 +222,20 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenStr, err := token.CreateToken(user_id)
+	/* tokenStr, err := token.CreateToken(user_id) */
+	session, err := token.Store.Get(r, "auth-token")
 
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	w.Header().Set("Auth-Token", tokenStr)
+	session.Values["user_id"] = user_id
+
+	//w.Header().Set("Auth-Token", tokenStr)
 	w.WriteHeader(http.StatusAccepted)
-	app.GetAllAuctions(w, r)
+	// app.GetAllAuctions(w, r)
+
 }
 
 func (app *AppController) Profile(w http.ResponseWriter, r *http.Request) {
