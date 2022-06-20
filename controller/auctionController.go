@@ -26,8 +26,6 @@ func getAllAuctions(auctions *AuctionDB) AuctionPageData {
 		result.Auctions = append(result.Auctions, auc)
 	}
 
-	fmt.Println(result)
-
 	return result
 }
 

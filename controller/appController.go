@@ -47,6 +47,7 @@ const (
 	tmpl_main_hub       = "allAuctions"
 	tmpl_new_auction    = "newAuction"
 	tmpl_auction_detail = "auctionDetail"
+	tmpl_user_profile   = "userProfile"
 )
 
 var templates = map[string]*template.Template{
@@ -54,6 +55,7 @@ var templates = map[string]*template.Template{
 	tmpl_main_hub:       nil,
 	tmpl_new_auction:    nil,
 	tmpl_auction_detail: nil,
+	tmpl_user_profile:   nil,
 }
 
 /* Database initialization */
@@ -151,12 +153,16 @@ func (app *AppController) GetAuction(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	auction_id := params["auction-id"]
 
+	fmt.Println("Auction id:", auction_id)
+
 	auction, err := getAuction(app.db.auctionDB, auction_id)
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+
+	fmt.Println("Sending...")
 
 	templates[tmpl_auction_detail].Execute(w, auction)
 }
@@ -235,7 +241,11 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 	//w.Header().Set("Auth-Token", tokenStr)
 	w.WriteHeader(http.StatusAccepted)
 	// app.GetAllAuctions(w, r)
-
+	// w.WriteHeader(http.StatusAccepted)
+	// app.GetAllAuctions(w, r)
+	// http.Redirect(w, r, "/auctions", http.StatusOK)
+	// http.Redirect(w, r, "/users/"+user_id, http.StatusSeeOther)
+	templates[tmpl_user_profile].Execute(w, nil)
 }
 
 func (app *AppController) Profile(w http.ResponseWriter, r *http.Request) {
@@ -246,7 +256,12 @@ func (app *AppController) Profile(w http.ResponseWriter, r *http.Request) {
 func (app *AppController) Home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	fmt.Println("Hello! world!")
+	username := r.Header.Get("username")
+
+	if len(username) > 0 {
+		w.Write([]byte(fmt.Sprintf("Welcome %v", username)))
+		return
+	}
 
 	templates[tmpl_home].Execute(w, nil)
 }
