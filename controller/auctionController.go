@@ -50,11 +50,11 @@ func deleteAuction(auctions *AuctionDB, auction_id string) {
 }
 
 func createAuction(auctions *AuctionDB, auction *Auction) int {
-	// Validar campos
-
+	auctions.mu.Lock()
 	auction.ID = ksuid.New().String()
 
 	_, err := auctions.collection.InsertOne(ctx, auction)
+	auctions.mu.Unlock()
 
 	if err != nil {
 		return http.StatusInternalServerError

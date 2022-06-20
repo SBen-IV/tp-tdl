@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 	"tp-tdl/token"
 
 	"github.com/gorilla/mux"
@@ -18,13 +19,13 @@ import (
 var ctx = context.TODO()
 
 type UserDB struct {
+	mu         sync.Mutex
 	collection *mongo.Collection
-	// Add mutex
 }
 
 type AuctionDB struct {
+	mu         sync.Mutex
 	collection *mongo.Collection
-	// Add mutex
 }
 
 type Database struct {
@@ -43,7 +44,7 @@ type AuctionPageData struct {
 
 const (
 	tmpl_home           = "index"
-	tmpl_main_hub       = "mainHub"
+	tmpl_main_hub       = "allAuctions"
 	tmpl_new_auction    = "newAuction"
 	tmpl_auction_detail = "auctionDetail"
 )
@@ -55,6 +56,7 @@ var templates = map[string]*template.Template{
 	tmpl_auction_detail: nil,
 }
 
+/* Database initialization */
 func connectToDB() (*mongo.Client, error) {
 	err := godotenv.Load()
 
@@ -68,6 +70,7 @@ func connectToDB() (*mongo.Client, error) {
 	return mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 }
 
+/* Templates initialization */
 func initializeTemplates() {
 	for key := range templates {
 		file_name := "templates/" + key + ".html"
@@ -75,6 +78,7 @@ func initializeTemplates() {
 	}
 }
 
+/* App controller initalization */
 func NewAppController() *AppController {
 	initializeTemplates()
 
@@ -86,36 +90,16 @@ func NewAppController() *AppController {
 
 	fmt.Println("Connected to DB")
 
-	/* 	coll := client.Database("the_blues").Collection("users")
-	   	var result User
-	   	coll.FindOne(context.TODO(), bson.M{"username": "mark"}).Decode(&result)
-	   	fmt.Println(result)
-	   	title := "Back to the Future"
-	   	var result bson.M
-	   	// err = coll.FindOne(context.TODO(), bson.D{{"title", title}}).Decode(&result)
-	   	if err == mongo.ErrNoDocuments {
-	   		//fmt.Printf("No document was found with the title %s\n", title)
-	   		panic("fail")
-	   	}
-	   	if err != nil {
-	   		panic(err)
-	   	}
-	   	jsonData, err := json.MarshalIndent(result, "", "    ")
-	   	if err != nil {
-	   		panic(err)
-	   	}
-	   	fmt.Printf("%s\n", jsonData) */
-
 	app := AppController{
 		db: &Database{
 			client: client,
 			userDB: &UserDB{
 				collection: client.Database("the_blues").Collection("users"),
-				// Add mutex
+				// mutex does not need to be initialized
 			},
 			auctionDB: &AuctionDB{
 				collection: client.Database("the_blues").Collection("auctions"),
-				// Add mutex
+				// mutex does not need to be initialized
 			},
 		},
 	}
@@ -123,9 +107,12 @@ func NewAppController() *AppController {
 	return &app
 }
 
-type AuctionType interface {
-	updateOffer() int
-	addParticipant() int
+/* Disconnects the database */
+func (app *AppController) Disconnect() error {
+	fmt.Println("Disconnecting DB...")
+	err := app.db.client.Disconnect(ctx)
+	fmt.Println("DB disconnected.")
+	return err
 }
 
 /* ============================================================================================= */
@@ -258,11 +245,4 @@ func (app *AppController) Home(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Hello! world!")
 
 	templates[tmpl_home].Execute(w, nil)
-}
-
-func (app *AppController) Disconnect() error {
-	fmt.Println("Disconnecting DB...")
-	err := app.db.client.Disconnect(ctx)
-	fmt.Println("DB disconnected.")
-	return err
 }

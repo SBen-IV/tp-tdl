@@ -21,7 +21,7 @@ func isValidUser(user User) bool {
 }
 
 func validateAndInsertUser(users *UserDB, newUser User) (int, string) {
-	// users lock
+	users.mu.Lock()
 	result := users.collection.FindOne(ctx, bson.M{"username": newUser.Username})
 
 	// User no existe, por lo tanto es válido
@@ -32,7 +32,7 @@ func validateAndInsertUser(users *UserDB, newUser User) (int, string) {
 	newUser.ID = ksuid.New().String()
 
 	_, err := users.collection.InsertOne(ctx, newUser)
-	// users unlock
+	users.mu.Unlock()
 
 	if err != nil {
 		fmt.Println(err)
@@ -56,9 +56,9 @@ func addNewUser(users *UserDB, newUser User) (int, string) {
 
 func loginUser(users *UserDB, user User) string {
 	var expectedUser User
-	// users lock
+	users.mu.Lock()
 	validUser := users.collection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&expectedUser)
-	// users unlock
+	users.mu.Unlock()
 
 	if validUser != nil || expectedUser.Password != user.Password {
 		return ""
