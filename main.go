@@ -40,13 +40,13 @@ func main() {
 	private.HandleFunc("/profile", app.Profile).Methods("GET")
 
 	// Auctions
-	private.HandleFunc("/createAuction", app.GetAuctionForm).Methods("GET")
-	private.HandleFunc("/createAuction", app.CreateAuction).Methods("POST")
+	private.HandleFunc("/create-auction", app.GetAuctionForm).Methods("GET")
+	private.HandleFunc("/create-auction", app.CreateAuction).Methods("POST")
 	private.HandleFunc("/auctions", app.GetAllAuctions).Methods("GET")
-	private.HandleFunc("/auctions/auctionid={auctionid}", app.GetAuction).Methods("GET")
-	private.HandleFunc("/auctions/auctionid={auctionid}", app.DeleteAuction).Methods("DELETE")
+	private.HandleFunc("/auctions/{auction-id}", app.GetAuction).Methods("GET")
+	private.HandleFunc("/auctions/{auction-id}", app.DeleteAuction).Methods("DELETE")
 	//	private.HandleFunc("/auctions/auctionid={auctionid}&userid={userid}", app.JoinAuction).Methods("PUT")
-	private.HandleFunc("/auctions/auctionid={auctionid}", app.UpdateAuctionOffer).Methods("POST")
+	private.HandleFunc("/auctions/{auction-id}", app.UpdateAuctionOffer).Methods("POST")
 
 	go http.ListenAndServe(":8000", r)
 
