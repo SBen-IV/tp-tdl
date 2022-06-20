@@ -31,24 +31,17 @@ func getAllAuctions(auctions *AuctionDB) AuctionPageData {
 	return result
 }
 
-func getAuction(auctions *AuctionDB) AuctionPageData {
-	cur, _ := auctions.collection.Find(ctx, bson.M{})
-	var result AuctionPageData
-	for cur.Next(ctx) {
-		var auc Auction
-		err := cur.Decode(&auc)
+func getAuction(auctions *AuctionDB, auction_id string) (Auction, error) {
+	result := auctions.collection.FindOne(ctx, bson.M{"_id": auction_id})
 
-		if err != nil {
-			fmt.Println(err)
-			return result
-		}
-
-		result.Auctions = append(result.Auctions, auc)
+	if result.Err() != nil {
+		return Auction{}, result.Err()
 	}
 
-	fmt.Println(result)
+	var auction Auction
+	result.Decode(&auction)
 
-	return result
+	return auction, nil
 }
 
 func deleteAuction(auctions *AuctionDB, auction_id string) {

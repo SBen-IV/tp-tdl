@@ -24,7 +24,7 @@ func AuthUser(next http.Handler) http.Handler {
 			return
 		}
 
-		fmt.Println(claims.(jwt.MapClaims)["user_id"].(string))
+		fmt.Println(claims.(jwt.MapClaims))
 		r.Header.Set("user_id", claims.(jwt.MapClaims)["user_id"].(string))
 
 		next.ServeHTTP(w, r)

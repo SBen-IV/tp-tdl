@@ -54,15 +54,15 @@ func addNewUser(users *UserDB, newUser User) (int, string) {
 	return http.StatusOK, "OK"
 }
 
-func loginUser(users *UserDB, user User) bool {
+func loginUser(users *UserDB, user User) string {
 	var expectedUser User
 	// users lock
 	validUser := users.collection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&expectedUser)
 	// users unlock
 
 	if validUser != nil || expectedUser.Password != user.Password {
-		return false
+		return ""
 	}
 
-	return true
+	return expectedUser.ID
 }

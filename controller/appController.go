@@ -42,15 +42,17 @@ type AuctionPageData struct {
 }
 
 const (
-	tmpl_home        = "index"
-	tmpl_main_hub    = "mainHub"
-	tmpl_new_auction = "newAuction"
+	tmpl_home           = "index"
+	tmpl_main_hub       = "mainHub"
+	tmpl_new_auction    = "newAuction"
+	tmpl_auction_detail = "auctionDetail"
 )
 
 var templates = map[string]*template.Template{
-	tmpl_home:        nil,
-	tmpl_main_hub:    nil,
-	tmpl_new_auction: nil,
+	tmpl_home:           nil,
+	tmpl_main_hub:       nil,
+	tmpl_new_auction:    nil,
+	tmpl_auction_detail: nil,
 }
 
 func connectToDB() (*mongo.Client, error) {
@@ -134,12 +136,6 @@ func (app *AppController) GetAuctionForm(w http.ResponseWriter, r *http.Request)
 	templates[tmpl_new_auction].Execute(w, nil)
 }
 
-func (app *AppController) GetAuction(w http.ResponseWriter, r *http.Request) {
-	auctions := getAuction(app.db.auctionDB)
-
-	templates[tmpl_main_hub].Execute(w, auctions)
-}
-
 func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	curr_offer, _ := strconv.Atoi(r.FormValue("currentoffer"))
@@ -162,6 +158,20 @@ func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) 
 	status := createAuction(app.db.auctionDB, &auction)
 
 	w.WriteHeader(status)
+}
+
+func (app *AppController) GetAuction(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	auction_id := params["auction-id"]
+
+	auction, err := getAuction(app.db.auctionDB, auction_id)
+
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	templates[tmpl_auction_detail].Execute(w, auction)
 }
 
 func (app *AppController) GetAllAuctions(w http.ResponseWriter, r *http.Request) {
@@ -187,7 +197,7 @@ func (app *AppController) UpdateAuctionOffer(w http.ResponseWriter, r *http.Requ
 
 func (app *AppController) DeleteAuction(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	auction_id := params["auctionid"]
+	auction_id := params["auction-id"]
 
 	deleteAuction(app.db.auctionDB, auction_id)
 
@@ -218,12 +228,14 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 		Password: r.FormValue("password"),
 	}
 
-	if !loginUser(app.db.userDB, user) {
+	user_id := loginUser(app.db.userDB, user)
+
+	if len(user_id) == 0 {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	tokenStr, err := token.CreateToken(user.ID)
+	tokenStr, err := token.CreateToken(user_id)
 
 	if err != nil {
 		fmt.Println(err)
@@ -232,8 +244,6 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Auth-Token", tokenStr)
 	w.WriteHeader(http.StatusAccepted)
-	/* 	http.Redirect(w, r, "/auctions", http.StatusAccepted)
-	   	http.RedirectHandler("/auctions", 0) */
 	app.GetAllAuctions(w, r)
 }
 
