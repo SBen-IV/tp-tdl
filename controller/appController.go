@@ -44,6 +44,8 @@ type AuctionPageData struct {
 }
 
 const (
+	tmpl_layout                = "layout"
+	tmpl_navbar                = "navbar"
 	tmpl_home                  = "index"
 	tmpl_main_hub              = "allAuctions"
 	tmpl_new_auction           = "newAuction"
@@ -63,11 +65,7 @@ var templates = map[string]*template.Template{
 
 /* Database initialization */
 func connectToDB() (*mongo.Client, error) {
-	err := godotenv.Load()
-
-	if err != nil {
-		panic("Can't load .env")
-	}
+	godotenv.Load()
 
 	user_db, password_db, uri_db := os.Getenv("USER_DB"), os.Getenv("PASSWORD_DB"), os.Getenv("URI_DB")
 	uri := fmt.Sprintf(uri_db, user_db, password_db)
@@ -77,9 +75,10 @@ func connectToDB() (*mongo.Client, error) {
 
 /* Templates initialization */
 func initializeTemplates() {
+	navbar := "templates/" + tmpl_navbar + ".gohtml"
 	for key := range templates {
-		file_name := "templates/" + key + ".html"
-		templates[key] = template.Must(template.ParseFiles(file_name, "templates/css/styles.css"))
+		file_name := "templates/" + key + ".gohtml"
+		templates[key] = template.Must(template.ParseFiles(navbar, file_name, "templates/css/styles.css"))
 	}
 }
 
@@ -120,12 +119,12 @@ func (app *AppController) Disconnect() error {
 	return err
 }
 
-/* ============================================================================================= */
-/* ============================================================================================= */
-/* ============================================================================================= */
+/* ================================================================== */
+/* ========================= Auction ================================ */
+/* ================================================================== */
 
 func (app *AppController) GetAuctionForm(w http.ResponseWriter, r *http.Request) {
-	templates[tmpl_new_auction].Execute(w, nil)
+	templates[tmpl_new_auction].ExecuteTemplate(w, tmpl_layout, nil)
 }
 
 func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) {
@@ -153,7 +152,6 @@ func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) 
 
 	createAuction(app.db.auctionDB, &auction)
 
-	// w.WriteHeader(status)
 	http.Redirect(w, r, "/auctions/"+auction.ID, http.StatusSeeOther)
 }
 
@@ -171,9 +169,9 @@ func (app *AppController) GetAuction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if auction.SellerID == r.Header.Get("user_id") {
-		templates[tmpl_auction_detail_seller].Execute(w, auction)
+		templates[tmpl_auction_detail_seller].ExecuteTemplate(w, tmpl_layout, auction)
 	} else {
-		templates[tmpl_auction_detail].Execute(w, auction)
+		templates[tmpl_auction_detail].ExecuteTemplate(w, tmpl_layout, auction)
 	}
 
 	fmt.Println("Sending...")
@@ -183,7 +181,7 @@ func (app *AppController) GetAuction(w http.ResponseWriter, r *http.Request) {
 func (app *AppController) GetAllAuctions(w http.ResponseWriter, r *http.Request) {
 	auctions := getAllAuctions(app.db.auctionDB)
 
-	templates[tmpl_main_hub].Execute(w, auctions)
+	templates[tmpl_main_hub].ExecuteTemplate(w, tmpl_layout, auctions)
 }
 
 func (app *AppController) UpdateAuctionOffer(w http.ResponseWriter, r *http.Request) {
@@ -219,9 +217,9 @@ func (app *AppController) DeleteAuction(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusOK)
 }
 
-/*
-	User
-*/
+/* =============================================================== */
+/* ========================= User ================================ */
+/* =============================================================== */
 
 func (app *AppController) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var newUser = User{
@@ -267,12 +265,29 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusAccepted)
 
-	templates[tmpl_user_profile].Execute(w, nil)
+	templates[tmpl_user_profile].ExecuteTemplate(w, tmpl_layout, user)
+}
+
+func (app *AppController) Logout(w http.ResponseWriter, r *http.Request) {
+	session, err := token.Store.Get(r, "auth-token")
+
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	session.Values["authorize"] = false
+
+	session.Save(r, w)
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (app *AppController) Profile(w http.ResponseWriter, r *http.Request) {
-	username := r.Header.Get("username")
-	w.Write([]byte(fmt.Sprintf("Profile of %v", username)))
+	user := User{
+		Username: r.Header.Get("username"),
+	}
+	templates[tmpl_user_profile].ExecuteTemplate(w, tmpl_layout, user)
 }
 
 func (app *AppController) Home(w http.ResponseWriter, r *http.Request) {
@@ -281,9 +296,9 @@ func (app *AppController) Home(w http.ResponseWriter, r *http.Request) {
 	username := r.Header.Get("username")
 
 	if len(username) > 0 {
-		w.Write([]byte(fmt.Sprintf("Welcome %v", username)))
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
 		return
 	}
 
-	templates[tmpl_home].Execute(w, nil)
+	templates[tmpl_home].ExecuteTemplate(w, tmpl_layout, nil)
 }

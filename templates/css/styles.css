@@ -1,74 +1,41 @@
 body {
-    margin: 0;
-    background: rgba(38, 118, 197, 0.603);
-    font: normal bold "Work Sans", sans-serif;
-    font-weight: 300;
-    color: whitesmoke; }
+  margin: 0;
+  background: rgba(38, 118, 197, 0.603);
+  font: normal bold "Work Sans", sans-serif;
+  font-weight: 300;
+  color: whitesmoke; }
   
-  .textoSombreado {
-    text-shadow: 2px 2px #000; }
-  
-  .pieDePag {
-    color: whitesmoke;
-    background-color: #01baef;
-    background-image: linear-gradient(315deg, #01baef 0%, #2a2a72 74%);
-    transform: translateY(50px); }
-  
-  section {
-    width: 80%;
-    margin: 0 auto; }
-    section h2 {
-      color: whitesmoke; }
-    section table {
-      color: whitesmoke; }
-  
-  .formulario {
-    margin-top: 20px; }
-  
-  .bordesRedondeados {
-    border-radius: 10px; }
-  
-  .banner {
-    text-align: center;
-    margin: 20px;
-    color: #55d6aa;
-    font-family: Tourney; }
-  
-  .galeria .itemsTotal {
-    padding: 20px;
-    display: flex;
-    flex-flow: wrap;
-    justify-content: center; }
-    .galeria .itemsTotal .item {
-      width: 250px;
-      height: 300px;
-      text-align: center;
-      flex-direction: row;
-      margin: 20px;
-      padding: 15px;
-      text-transform: uppercase;
-      transition: transform 250ms;
-      background: #2a2a72;
-      box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25);
-      -webkit-box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25);
-      -moz-box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25); }
-    .galeria .itemsTotal .item:hover {
-      transform: scale(1.1); }
-  
-  .tabla {
-    border: solid;
-    border-width: 1;
-    margin-bottom: 60px; }
-  
-  .tabla__titulo {
-    color: #55d6aa;
-    font-family: Tourney;
-    text-decoration: none;
-    text-transform: uppercase;
-    font-size: 16px; }
-  
-  @keyframes iniciaPagina {
-    0% { }
-    50% {
-      color: darkred; }
-    100% { } }
+.textoSombreado {
+  text-shadow: 2px 2px #000; }
+
+section {
+  width: 80%;
+  margin: 0 auto; }
+section h2 {
+  color: whitesmoke; }
+section table {
+  color: whitesmoke; }
+
+.bordesRedondeados {
+  border-radius: 10px; }
+
+.galeria .itemsTotal {
+  padding: 20px;
+  display: flex;
+  flex-flow: wrap;
+  justify-content: center; }
+.galeria .itemsTotal .item {
+  width: 250px;
+  height: 300px;
+  text-align: center;
+  flex-direction: row;
+  margin: 20px;
+  padding: 15px;
+  text-transform: uppercase;
+  transition: transform 250ms;
+  background: #2a2a72;
+  box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25);
+  -webkit-box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25);
+  -moz-box-shadow: 10px 10px 11px -1px rgba(0, 0, 0, 0.25); }
+.galeria .itemsTotal .item:hover {
+  transform: scale(1.1); }

@@ -65,8 +65,8 @@ func createAuction(auctions *AuctionDB, auction *Auction) int {
 func updateAuctionOffer(auctions *AuctionDB, auction *Auction, user_offer UserOffer) {
 	auctions.mu.Lock()
 	if auction.UserOffer.CurrentOffer < user_offer.CurrentOffer {
-		filter := bson.D{{"_id", auction.ID}}
-		update := bson.D{{"$set", bson.D{{"user_offer", user_offer}}}}
+		filter := bson.M{"_id": auction.ID}
+		update := bson.M{"$set": bson.M{"user_offer": user_offer}}
 		auctions.collection.UpdateOne(ctx, filter, update)
 		fmt.Println("Update ", auction.ID)
 	}

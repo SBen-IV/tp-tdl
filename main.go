@@ -23,7 +23,8 @@ func main() {
 		}
 	}()
 
-	r.PathPrefix("/templates/css/").Handler(http.StripPrefix("/templates/css/", http.FileServer(http.Dir("./templates/css/"))))
+	//r.PathPrefix("/templates/css/").Handler(http.StripPrefix("/templates/css/", http.FileServer(http.Dir("./templates/css/"))))
+	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./templates/css"))))
 
 	public := r.NewRoute().Subrouter()
 	private := r.NewRoute().Subrouter()
@@ -37,6 +38,8 @@ func main() {
 	private.Use(middleware.AuthUser)
 
 	// Users
+	private.HandleFunc("/profile", app.Profile).Methods("GET")
+	private.HandleFunc("/logout", app.Logout).Methods("POST")
 
 	// Auctions
 	private.HandleFunc("/create-auction", app.GetAuctionForm).Methods("GET")

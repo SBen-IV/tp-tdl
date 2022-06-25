@@ -1,0 +1,52 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <title>Auction Detail</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="/css/styles.css">
+    </head>
+    <body>    
+        {{template "navbar"}}
+        <section class="py-5">
+            <div class="container px-4 px-lg-5 my-5">
+                <div class="row gx-4 gx-lg-5 align-items-center">
+                    <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" src={{.ImageURL}} alt="..." /></div>
+                    <div class="col-md-6">
+                        {{if .HasEnded}}
+                            <div class="small mb-1">This auction is CLOSED</div>
+                            <h1 class="display-5 fw-bolder">{{.Title}}</h1>
+                            <div class="fs-5 mb-5">
+                              <div class="fs-5 mb-5">
+                                  <span>${{.UserOffer.CurrentOffer}}</span>
+                            </div>
+                            </div>
+                            <p class="lead">{{.Description}}</p>
+                        {{else}}
+                            <div class="small mb-1">This auction is OPEN</div>
+                            <h1 class="display-5 fw-bolder">{{.Title}}</h1>
+                            <div class="fs-5 mb-5">
+                                <span>${{.UserOffer.CurrentOffer}} </span>
+                                offered by {{.UserOffer.Username}}
+                            </div>
+                            <p class="lead">{{.Description}}</p>
+                            <div class="d-flex">
+                              <form action="/auctions/{{.ID}}" method="post">
+                                  <div class="d-flex">
+                                      <input class="form-control text-center me-3" name="offer" id="offer" type="number" value="1" style="max-width: 6rem" required>
+                                      <input type="submit" value="Offer" class="btn btn-outline-dark flex-shrink-0">
+                                  </div>
+                              </form>
+                              <a href="/auctions/{{.ID}}"><button type="button" class="btn btn-info">Update price</button></a>
+                            </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </section>
+    </body>
+</html>
+{{end}}
