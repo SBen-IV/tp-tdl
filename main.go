@@ -49,7 +49,13 @@ func main() {
 	private.HandleFunc("/auctions/{auction-id}", app.DeleteAuction).Methods("DELETE")
 	private.HandleFunc("/auctions/{auction-id}", app.UpdateAuctionOffer).Methods("POST")
 
-	go http.ListenAndServe(":8000", r)
+	port, port_exist := os.LookupEnv("PORT")
+
+	if !port_exist {
+		port = "8000"
+	}
+
+	go http.ListenAndServe(":"+port, r)
 
 	scanner := bufio.NewScanner(os.Stdin)
 
