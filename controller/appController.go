@@ -67,17 +67,34 @@ var templates = map[string]*template.Template{
 func connectToDB() (*mongo.Client, error) {
 	_, err := os.Stat(".env")
 
-	if err == nil {
+	if err != nil {
+		fmt.Println("Loading envs from os")
+	} else {
 		fmt.Println("Loading envs from .env")
 		godotenv.Load()
-	} else {
-		fmt.Println("Loading envs from os")
 	}
 
-	user_db, password_db, uri_db := os.Getenv("USER_DB"), os.Getenv("PASSWORD_DB"), os.Getenv("URI_DB")
+	user_db, user_exist := os.LookupEnv("USER_DB")
+
+	if !user_exist {
+		panic("User does not exist")
+	}
+
+	password_db, pass_exist := os.LookupEnv("PASSWORD_DB")
+
+	if !pass_exist {
+		panic("Password does not exist")
+	}
+
+	uri_db, uri_exist := os.LookupEnv("URI_DB")
+
+	if !uri_exist {
+		panic("URI does not exist")
+	}
+
 	uri := fmt.Sprintf(uri_db, user_db, password_db)
 
-	return mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	return mongo.Connect(ctx, options.Client().ApplyURI(uri))
 }
 
 /* Templates initialization */
