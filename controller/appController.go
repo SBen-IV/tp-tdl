@@ -203,11 +203,13 @@ func (app *AppController) DeleteAuction(w http.ResponseWriter, r *http.Request) 
 
 func (app *AppController) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var newUser = User{
-		Firstname: r.FormValue("firstname"),
-		Lastname:  r.FormValue("lastname"),
+		Firstname: r.FormValue("firstName"),
+		Lastname:  r.FormValue("lastName"),
 		Username:  r.FormValue("username"),
 		Password:  r.FormValue("password"),
 	}
+
+	fmt.Println(newUser.Firstname, newUser.Lastname, newUser.Username, newUser.Password)
 
 	status, msg := addNewUser(app.db.userDB, newUser)
 
