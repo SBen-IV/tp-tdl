@@ -23,8 +23,8 @@ func main() {
 		}
 	}()
 
-	//r.PathPrefix("/templates/css/").Handler(http.StripPrefix("/templates/css/", http.FileServer(http.Dir("./templates/css/"))))
-	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./templates/css"))))
+	r.PathPrefix("/templates/css/").Handler(http.StripPrefix("/templates/css/", http.FileServer(http.Dir("templates/css/"))))
+	//http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./templates/css"))))
 
 	public := r.NewRoute().Subrouter()
 	private := r.NewRoute().Subrouter()
