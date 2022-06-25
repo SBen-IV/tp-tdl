@@ -10,6 +10,7 @@ import (
 )
 
 type Auction model.Auction
+type UserOffer model.UserOffer
 
 func getAllAuctions(auctions *AuctionDB) AuctionPageData {
 	cur, _ := auctions.collection.Find(ctx, bson.M{})
@@ -59,4 +60,17 @@ func createAuction(auctions *AuctionDB, auction *Auction) int {
 	}
 
 	return http.StatusOK
+}
+
+func updateAuctionOffer(auctions *AuctionDB, auction *Auction, user_offer UserOffer) {
+	auctions.mu.Lock()
+	if auction.UserOffer.CurrentOffer < user_offer.CurrentOffer {
+		filter := bson.D{{"_id", auction.ID}}
+		update := bson.D{{"$set", bson.D{{"user_offer", user_offer}}}}
+		auctions.collection.UpdateOne(ctx, filter, update)
+		fmt.Println("Update ", auction.ID)
+	}
+
+	fmt.Println("Curr offer", auction.UserOffer.CurrentOffer, "new offer", user_offer.CurrentOffer)
+	auctions.mu.Unlock()
 }

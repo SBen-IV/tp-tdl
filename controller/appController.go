@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"tp-tdl/model"
 	"tp-tdl/token"
 
 	"github.com/gorilla/mux"
@@ -43,19 +44,21 @@ type AuctionPageData struct {
 }
 
 const (
-	tmpl_home           = "index"
-	tmpl_main_hub       = "allAuctions"
-	tmpl_new_auction    = "newAuction"
-	tmpl_auction_detail = "auctionDetail"
-	tmpl_user_profile   = "userProfile"
+	tmpl_home                  = "index"
+	tmpl_main_hub              = "allAuctions"
+	tmpl_new_auction           = "newAuction"
+	tmpl_auction_detail        = "auctionDetail"
+	tmpl_user_profile          = "userProfile"
+	tmpl_auction_detail_seller = "auctionDetailSeller"
 )
 
 var templates = map[string]*template.Template{
-	tmpl_home:           nil,
-	tmpl_main_hub:       nil,
-	tmpl_new_auction:    nil,
-	tmpl_auction_detail: nil,
-	tmpl_user_profile:   nil,
+	tmpl_home:                  nil,
+	tmpl_main_hub:              nil,
+	tmpl_new_auction:           nil,
+	tmpl_auction_detail:        nil,
+	tmpl_user_profile:          nil,
+	tmpl_auction_detail_seller: nil,
 }
 
 /* Database initialization */
@@ -135,18 +138,23 @@ func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var auction = Auction{
-		Title:        r.FormValue("title"),
-		Description:  r.FormValue("description"),
-		SellerID:     r.Header.Get("user_id"),
-		CurrentOffer: curr_offer,
-		IsTimed:      is_timed,
-		HasEnded:     false,
-		ImageURL:     r.FormValue("imageurl"),
+		Title:       r.FormValue("title"),
+		Description: r.FormValue("description"),
+		SellerID:    r.Header.Get("user_id"),
+		UserOffer: model.UserOffer{
+			CurrentOffer: curr_offer,
+			UserID:       r.Header.Get("user_id"),
+			Username:     r.Header.Get("username"),
+		},
+		IsTimed:  is_timed,
+		HasEnded: false,
+		ImageURL: r.FormValue("imageurl"),
 	}
 
-	status := createAuction(app.db.auctionDB, &auction)
+	createAuction(app.db.auctionDB, &auction)
 
-	w.WriteHeader(status)
+	// w.WriteHeader(status)
+	http.Redirect(w, r, "/auctions/"+auction.ID, http.StatusSeeOther)
 }
 
 func (app *AppController) GetAuction(w http.ResponseWriter, r *http.Request) {
@@ -162,9 +170,14 @@ func (app *AppController) GetAuction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if auction.SellerID == r.Header.Get("user_id") {
+		templates[tmpl_auction_detail_seller].Execute(w, auction)
+	} else {
+		templates[tmpl_auction_detail].Execute(w, auction)
+	}
+
 	fmt.Println("Sending...")
 
-	templates[tmpl_auction_detail].Execute(w, auction)
 }
 
 func (app *AppController) GetAllAuctions(w http.ResponseWriter, r *http.Request) {
@@ -175,17 +188,26 @@ func (app *AppController) GetAllAuctions(w http.ResponseWriter, r *http.Request)
 
 func (app *AppController) UpdateAuctionOffer(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	/* 	params := mux.Vars(r)
-	   	auctionId := params["auctionid"]
-	   	rawOffer := params["newoffer"]
-	   	newOffer, err := strconv.Atoi(rawOffer)
-	   	if err != nil {
-	   		panic("Received offer is invalid")
-	   	}
-	   	auctionToUpdate := App.FindAuctionByID(auctionId) */
-	/* 	if auctionToUpdate.currentOffer < newOffer {
-		auctionToUpdate.currentOffer = newOffer
-	} */
+	params := mux.Vars(r)
+	auction_id := params["auction-id"]
+
+	auction, err := getAuction(app.db.auctionDB, auction_id)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	offer, _ := strconv.Atoi(r.FormValue("offer"))
+
+	user_offer := UserOffer{
+		CurrentOffer: offer,
+		UserID:       r.Header.Get("user_id"),
+		Username:     r.Header.Get("username"),
+	}
+
+	updateAuctionOffer(app.db.auctionDB, &auction, user_offer)
+	http.Redirect(w, r, "/auctions/"+auction.ID, http.StatusSeeOther)
 }
 
 func (app *AppController) DeleteAuction(w http.ResponseWriter, r *http.Request) {
@@ -230,7 +252,6 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/* tokenStr, err := token.CreateToken(user_id) */
 	session, err := token.Store.Get(r, "auth-token")
 
 	if err != nil {
@@ -240,16 +261,12 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 
 	session.Values["authorize"] = true
 	session.Values["user_id"] = user_id
+	session.Values["username"] = user.Username
 
 	session.Save(r, w)
 
-	//w.Header().Set("Auth-Token", tokenStr)
 	w.WriteHeader(http.StatusAccepted)
-	// app.GetAllAuctions(w, r)
-	// w.WriteHeader(http.StatusAccepted)
-	// app.GetAllAuctions(w, r)
-	// http.Redirect(w, r, "/auctions", http.StatusOK)
-	// http.Redirect(w, r, "/users/"+user_id, http.StatusSeeOther)
+
 	templates[tmpl_user_profile].Execute(w, nil)
 }
 

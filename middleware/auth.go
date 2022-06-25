@@ -30,12 +30,13 @@ func AuthUser(next http.Handler) http.Handler {
 			return
 		}
 
-		if !session.Values["authorize"].(bool) {
+		if val, ok := session.Values["authorize"].(bool); !ok && !val {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
 		r.Header.Set("user_id", session.Values["user_id"].(string))
+		r.Header.Set("username", session.Values["username"].(string))
 
 		next.ServeHTTP(w, r)
 	})

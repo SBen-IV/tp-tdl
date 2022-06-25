@@ -22,7 +22,7 @@
                       <a class="nav-link active" aria-current="page" href="#">Home</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" href="#">Auctions</a>
+                      <a class="nav-link" href="/auctions">Auctions</a>
                     </li>
                     <li class="nav-item dropdown">
                       <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -52,25 +52,20 @@
                     <div class="col-md-6">
                         {{if .HasEnded}}
                             <div class="small mb-1">This auction is CLOSED</div>
-                            <h1 class="display-5 fw-bolder">{{.Title}}</h1>
-                            <div class="fs-5 mb-5">
-                              <div class="fs-5 mb-5">
-                                  <span>${{.UserOffer.CurrentOffer}}</span>
-                            </div>
-                            </div>
-                            <p class="lead">{{.Description}}</p>
                         {{else}}
                             <div class="small mb-1">This auction is OPEN</div>
-                            <h1 class="display-5 fw-bolder">{{.Title}}</h1>
-                            <div class="fs-5 mb-5">
-                                <span>${{.UserOffer.CurrentOffer}} </span>
-                                offered by {{.UserOffer.Username}}
-                            </div>
-                            <p class="lead">{{.Description}}</p>
+                        {{end}}
+                        <h1 class="display-5 fw-bolder">{{.Title}}</h1>
+                        <div class="fs-5 mb-5">
+                            <span>${{.UserOffer.CurrentOffer}} </span>
+                            offered by {{.UserOffer.Username}}
+                        </div>
+                        <p class="lead">{{.Description}}</p>
+                        {{if .IsTimed}}
+                        {{else}}
                             <form action="/auctions/{{.ID}}" method="post">
                                 <div class="d-flex">
-                                    <input class="form-control text-center me-3" name="offer" id="offer" type="number" value="1" style="max-width: 6rem" required>
-                                    <input type="submit" value="Offer" class="btn btn-outline-dark flex-shrink-0">
+                                    <input type="submit" value="End Auction" class="btn btn-outline-dark flex-shrink-0">
                                 </div>
                             </form>
                         {{end}}
