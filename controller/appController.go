@@ -65,7 +65,14 @@ var templates = map[string]*template.Template{
 
 /* Database initialization */
 func connectToDB() (*mongo.Client, error) {
-	godotenv.Load()
+	_, err := os.Stat(".env")
+
+	if err == nil {
+		fmt.Println("Loading envs from .env")
+		godotenv.Load()
+	} else {
+		fmt.Println("Loading envs from os")
+	}
 
 	user_db, password_db, uri_db := os.Getenv("USER_DB"), os.Getenv("PASSWORD_DB"), os.Getenv("URI_DB")
 	uri := fmt.Sprintf(uri_db, user_db, password_db)
