@@ -56,7 +56,7 @@ func main() {
 		port = "8000"
 	}
 
-	fmt.Println("Listening on port ", port)
+	fmt.Println("Listening on port", port)
 
 	if _, heroku_exist := os.LookupEnv("HEROKU"); heroku_exist {
 		http.ListenAndServe(":"+port, r)

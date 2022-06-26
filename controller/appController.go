@@ -64,6 +64,17 @@ var templates = map[string]*template.Template{
 	tmpl_auction_detail_seller: nil,
 }
 
+func getEnv(envKey string) string {
+	value, exists := os.LookupEnv(envKey)
+
+	if !exists {
+		fmt.Println(envKey, " does not exist")
+		panic("GetEnv failed")
+	}
+
+	return value
+}
+
 /* Database initialization */
 func connectToDB() (*mongo.Client, error) {
 	_, err := os.Stat(".env")
@@ -75,23 +86,7 @@ func connectToDB() (*mongo.Client, error) {
 		godotenv.Load()
 	}
 
-	user_db, user_exist := os.LookupEnv("USER_DB")
-
-	if !user_exist {
-		panic("User does not exist")
-	}
-
-	password_db, pass_exist := os.LookupEnv("PASSWORD_DB")
-
-	if !pass_exist {
-		panic("Password does not exist")
-	}
-
-	uri_db, uri_exist := os.LookupEnv("URI_DB")
-
-	if !uri_exist {
-		panic("URI does not exist")
-	}
+	user_db, password_db, uri_db := getEnv("USER_DB"), getEnv("PASSWORD_DB"), getEnv("URI_DB")
 
 	uri := fmt.Sprintf(uri_db, user_db, password_db)
 
@@ -114,6 +109,10 @@ func NewAppController() *AppController {
 	client, err := connectToDB()
 
 	if err != nil {
+		panic(err)
+	}
+
+	if err := client.Ping(ctx, nil); err != nil {
 		panic(err)
 	}
 
