@@ -16,7 +16,7 @@
                 <div class="row gx-4 gx-lg-5 align-items-center">
                     <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" src={{.ImageURL}} alt="..." /></div>
                     <div class="col-md-6">
-                        {{if .HasEnded}}
+                        {{if .IsOver}}
                             <div class="small mb-1">This auction is CLOSED</div>
                         {{else}}
                             <div class="small mb-1">This auction is OPEN</div>
@@ -27,7 +27,7 @@
                             offered by {{.UserOffer.Username}}
                         </div>
                         <p class="lead">{{.Description}}</p>
-                        {{if .HasEnded}}
+                        {{if .IsOver}}
                         {{else}}{{if .IsTimed}}
                         {{else}}
                         <div class="d-flex">

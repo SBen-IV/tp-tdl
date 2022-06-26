@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 	"tp-tdl/model"
 	"tp-tdl/token"
 
@@ -154,10 +155,31 @@ func (app *AppController) GetAuctionForm(w http.ResponseWriter, r *http.Request)
 func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	curr_offer, _ := strconv.Atoi(r.FormValue("currentoffer"))
-	var is_timed = false
+	var is_timed model.AuctionType
 
 	if r.FormValue("auctionType") == "timed" {
-		is_timed = true
+		var duration time.Duration
+
+		switch r.FormValue("auctionLength") {
+		case "6h":
+			duration = time.Second * 30
+		case "12h":
+			duration = time.Minute
+		case "24h":
+			duration = time.Minute * 2
+		}
+
+		is_timed = &AuctionTime{
+			Start:    time.Now(),
+			Duration: duration,
+			IsOver:   false,
+			IsTimed:  true,
+		}
+	} else {
+		is_timed = &AuctionNoTime{
+			IsOver:  false,
+			IsTimed: false,
+		}
 	}
 
 	var auction = Auction{
@@ -169,8 +191,7 @@ func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) 
 			UserID:       r.Header.Get("user_id"),
 			Username:     r.Header.Get("username"),
 		},
-		IsTimed:  is_timed,
-		HasEnded: false,
+		Type:     is_timed,
 		ImageURL: r.FormValue("imageurl"),
 	}
 
@@ -220,7 +241,7 @@ func (app *AppController) UpdateAuctionOffer(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if !auction.HasEnded {
+	if !auction.Type.HasEnded() {
 		offer, _ := strconv.Atoi(r.FormValue("offer"))
 
 		user_offer := UserOffer{
