@@ -7,21 +7,15 @@ import (
 
 func AuthUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, err := token.Store.Get(r, "auth-token")
+		data, err := token.GetContent(r, []string{"user_id", "username"})
 
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
-		ok := session.Values["authorize"].(bool)
-		if !ok {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		r.Header.Set("user_id", session.Values["user_id"].(string))
-		r.Header.Set("username", session.Values["username"].(string))
+		r.Header.Set("user_id", data["user_id"])
+		r.Header.Set("username", data["username"])
 
 		next.ServeHTTP(w, r)
 	})
