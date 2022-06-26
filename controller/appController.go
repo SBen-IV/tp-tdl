@@ -189,7 +189,12 @@ func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) 
 		ImageURL: r.FormValue("imageurl"),
 	}
 
-	createAuction(app.db.auctionDB, &auction)
+	err := createAuction(app.db.auctionDB, &auction)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	http.Redirect(w, r, "/auctions/"+auction.ID, http.StatusSeeOther)
 }

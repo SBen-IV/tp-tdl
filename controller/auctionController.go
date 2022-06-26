@@ -1,9 +1,7 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"tp-tdl/model"
 
 	"github.com/segmentio/ksuid"
@@ -13,6 +11,9 @@ import (
 type Auction model.Auction
 type UserOffer model.UserOffer
 
+/*
+Devuelve todas las subastas disponibles como un AuctionPageData
+*/
 func getAllAuctions(auctions *AuctionDB) AuctionPageData {
 	cur, _ := auctions.collection.Find(ctx, bson.M{})
 	var result AuctionPageData
@@ -31,8 +32,13 @@ func getAllAuctions(auctions *AuctionDB) AuctionPageData {
 	return result
 }
 
+/*
+Dado un auction_id devuelve la información completa de un auction y un error en caso de haberlo
+*/
 func getAuction(auctions *AuctionDB, auction_id string) (Auction, error) {
+	auctions.mu.Lock()
 	result := auctions.collection.FindOne(ctx, bson.M{"_id": auction_id})
+	auctions.mu.Unlock()
 
 	if result.Err() != nil {
 		return Auction{}, result.Err()
@@ -43,12 +49,21 @@ func getAuction(auctions *AuctionDB, auction_id string) (Auction, error) {
 	return auction, nil
 }
 
+/*
+Dado un auction_id, lo elimina de la base de datos auctions
+*/
 func deleteAuction(auctions *AuctionDB, auction_id string) {
+	auctions.mu.Lock()
 	cur := auctions.collection.FindOneAndDelete(ctx, bson.M{"id": auction_id})
+	auctions.mu.Unlock()
 	fmt.Println(cur)
 }
 
-func createAuction(auctions *AuctionDB, auction *Auction) int {
+/*
+Dado un auction se guarda en la base de datos auctions.
+Devuelve nil si todo salio bien, o un error en caso contrario
+*/
+func createAuction(auctions *AuctionDB, auction *Auction) error {
 	auctions.mu.Lock()
 	auction.ID = ksuid.New().String()
 
@@ -56,12 +71,16 @@ func createAuction(auctions *AuctionDB, auction *Auction) int {
 	auctions.mu.Unlock()
 
 	if err != nil {
-		return http.StatusInternalServerError
+		return err
 	}
 
-	return http.StatusOK
+	return nil
 }
 
+/*
+Dado un auction y una oferta, si esta es mayor a la oferta actual entonces se actualiza la oferta,
+ en caso contrario no hace nada
+*/
 func updateAuctionOffer(auctions *AuctionDB, auction *Auction, user_offer UserOffer) {
 	auctions.mu.Lock()
 	if auction.UserOffer.CurrentOffer < user_offer.CurrentOffer {
@@ -75,21 +94,11 @@ func updateAuctionOffer(auctions *AuctionDB, auction *Auction, user_offer UserOf
 	auctions.mu.Unlock()
 }
 
+/*
+Dado un auction_id setea el campo is_over en true indicando que la subasta terminó
+*/
 func endAuction(auctions *AuctionDB, auction_id string) {
 	auctions.mu.Lock()
 	auctions.collection.UpdateOne(ctx, bson.M{"_id": auction_id}, bson.M{"$set": bson.M{"is_over": true}})
 	auctions.mu.Unlock()
-}
-
-func (auc *Auction) UnmarshallJSON(b []byte) error {
-	auction := &json.RawMessage{}
-
-	err := json.Unmarshal(b, &auction)
-	fmt.Println(auction)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
