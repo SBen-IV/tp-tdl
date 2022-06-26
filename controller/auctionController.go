@@ -74,3 +74,9 @@ func updateAuctionOffer(auctions *AuctionDB, auction *Auction, user_offer UserOf
 	fmt.Println("Curr offer", auction.UserOffer.CurrentOffer, "new offer", user_offer.CurrentOffer)
 	auctions.mu.Unlock()
 }
+
+func endAuction(auctions *AuctionDB, auction_id string) {
+	auctions.mu.Lock()
+	auctions.collection.UpdateOne(ctx, bson.M{"_id": auction_id}, bson.M{"$set": bson.M{"has_ended": true}})
+	auctions.mu.Unlock()
+}

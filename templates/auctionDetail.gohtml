@@ -20,9 +20,8 @@
                             <div class="small mb-1">This auction is CLOSED</div>
                             <h1 class="display-5 fw-bolder">{{.Title}}</h1>
                             <div class="fs-5 mb-5">
-                              <div class="fs-5 mb-5">
-                                  <span>${{.UserOffer.CurrentOffer}}</span>
-                            </div>
+                                <span>${{.UserOffer.CurrentOffer}} </span>
+                                bought by {{.UserOffer.Username}}
                             </div>
                             <p class="lead">{{.Description}}</p>
                         {{else}}

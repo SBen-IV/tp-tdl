@@ -220,15 +220,34 @@ func (app *AppController) UpdateAuctionOffer(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	offer, _ := strconv.Atoi(r.FormValue("offer"))
+	if !auction.HasEnded {
+		offer, _ := strconv.Atoi(r.FormValue("offer"))
 
-	user_offer := UserOffer{
-		CurrentOffer: offer,
-		UserID:       r.Header.Get("user_id"),
-		Username:     r.Header.Get("username"),
+		user_offer := UserOffer{
+			CurrentOffer: offer,
+			UserID:       r.Header.Get("user_id"),
+			Username:     r.Header.Get("username"),
+		}
+
+		updateAuctionOffer(app.db.auctionDB, &auction, user_offer)
 	}
 
-	updateAuctionOffer(app.db.auctionDB, &auction, user_offer)
+	http.Redirect(w, r, "/auctions/"+auction.ID, http.StatusSeeOther)
+}
+
+func (app *AppController) EndAuction(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	auction_id := params["auction-id"]
+
+	auction, err := getAuction(app.db.auctionDB, auction_id)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	endAuction(app.db.auctionDB, auction.ID)
+
 	http.Redirect(w, r, "/auctions/"+auction.ID, http.StatusSeeOther)
 }
 

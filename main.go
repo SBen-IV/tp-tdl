@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net/http"
 	"os"
@@ -48,6 +49,7 @@ func main() {
 	private.HandleFunc("/auctions/{auction-id}", app.GetAuction).Methods("GET")
 	private.HandleFunc("/auctions/{auction-id}", app.DeleteAuction).Methods("DELETE")
 	private.HandleFunc("/auctions/{auction-id}", app.UpdateAuctionOffer).Methods("POST")
+	private.HandleFunc("/auctions/seller/{auction-id}", app.EndAuction).Methods("POST")
 
 	port, port_exist := os.LookupEnv("PORT")
 
@@ -56,14 +58,20 @@ func main() {
 	}
 
 	fmt.Println("Listening on port ", port)
-	http.ListenAndServe(":"+port, r)
 
-	/* scanner := bufio.NewScanner(os.Stdin)
+	if _, heroku_exist := os.LookupEnv("HEROKU"); heroku_exist {
+		http.ListenAndServe(":"+port, r)
+		return
+	}
+
+	go http.ListenAndServe(":"+port, r)
+
+	scanner := bufio.NewScanner(os.Stdin)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "q" {
 			break
 		}
-	} */
+	}
 }

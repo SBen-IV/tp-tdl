@@ -27,16 +27,18 @@
                             offered by {{.UserOffer.Username}}
                         </div>
                         <p class="lead">{{.Description}}</p>
-                        {{if .IsTimed}}
+                        {{if .HasEnded}}
+                        {{else}}{{if .IsTimed}}
                         {{else}}
                         <div class="d-flex">
-                          <form action="/auctions/{{.ID}}" method="post">
+                          <form action="/auctions/seller/{{.ID}}" method="post">
                               <div class="d-flex">
                                   <input type="submit" value="End Auction" class="btn btn-outline-dark flex-shrink-0">
                               </div>
                           </form>
                           <a href="/auctions/{{.ID}}"><button type="button" class="btn btn-info">Update price</button></a>
                         </div>
+                        {{end}}
                         {{end}}
                     </div>
                 </div>
