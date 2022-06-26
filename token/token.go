@@ -1,41 +1,46 @@
 package token
 
 import (
-	"github.com/golang-jwt/jwt/v4"
+	"net/http"
+
 	"github.com/gorilla/sessions"
 )
 
-type Claims struct {
-	UserID string `json:"user_id"`
-	jwt.RegisteredClaims
-}
-
-var jwtKey = []byte("secret-key")
-
 var Store = sessions.NewCookieStore([]byte("secret-key"))
 
-func CreateToken(user_id string) (string, error) {
-	claims := Claims{
-		UserID: user_id,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer: "The Blues",
-		},
-	}
+const (
+	TokenName = "auth-token"
+	AuthKey   = "authorize"
+)
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenStr, err := token.SignedString(jwtKey)
-
-	return tokenStr, err
-}
-
-func GetContent(token string) (jwt.Claims, error) {
-	tkn, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
-	})
+func CreateToken(w http.ResponseWriter, r *http.Request, otherData map[string]string) error {
+	session, err := Store.Get(r, TokenName)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return tkn.Claims, err
+	session.Values[AuthKey] = true
+
+	for key, value := range otherData {
+		session.Values[key] = value
+	}
+
+	session.Save(r, w)
+
+	return nil
+}
+
+func DestroyToken(w http.ResponseWriter, r *http.Request) error {
+	session, err := Store.Get(r, TokenName)
+
+	if err != nil {
+		return err
+	}
+
+	session.Values[AuthKey] = false
+
+	session.Save(r, w)
+
+	return nil
 }

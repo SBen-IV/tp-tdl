@@ -322,18 +322,15 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := token.Store.Get(r, "auth-token")
+	err := token.CreateToken(w, r, map[string]string{
+		"user_id":  user_id,
+		"username": user.Username,
+	})
 
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-
-	session.Values["authorize"] = true
-	session.Values["user_id"] = user_id
-	session.Values["username"] = user.Username
-
-	session.Save(r, w)
 
 	w.WriteHeader(http.StatusAccepted)
 
@@ -341,16 +338,12 @@ func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *AppController) Logout(w http.ResponseWriter, r *http.Request) {
-	session, err := token.Store.Get(r, "auth-token")
+	err := token.DestroyToken(w, r)
 
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-
-	session.Values["authorize"] = false
-
-	session.Save(r, w)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
