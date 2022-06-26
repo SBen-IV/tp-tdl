@@ -12,35 +12,37 @@ URI_DB="mongodb+srv://%s:%s@..."
 > `URI_DB` debe tener `%s` (el primero es `USER_DB` y el otro `PASSWORD_DB`) porque se usa con `fmt.Sprintf`
 
 Para iniciar el servidor, correr:
-```
+```sh
 go run main.go
 ```
 
+o bien:
+
+```sh
+go build # Compila y genera el ejecutable
+./tp-tdl
+```
+
 ## Tipos de subasta
-- Subasta dinamica ascendente(normal)
-- Subasta dinamica descendente(se pone un precio muy elevado y se empiezan a hacer ofertas menores)
+- Subasta dinamica ascendente (normal)
 - Subasta por tiempo
-- Subasta donde el primero paga lo de el segundo
-- Subasta de servicio o producto de proveedores, elige la mas baja.
-
-## Aspectos a implementar
-- Controlador
-- Usuarios
-- Subasta
-- Conversion de monedas
-- UI
-
-## Como implementarlo
-- Con las librerias nativas
-- Con librerias como gorilla/gin.
+- ~~Subasta dinamica descendente(se pone un precio muy elevado y se empiezan a hacer ofertas menores)~~
+- ~~Subasta donde el primero paga lo de el segundo~~
+- ~~Subasta de servicio o producto de proveedores, elige la mas baja.~~
 
 ## Endpoints
-- authUser
-- updateOffer
-- closeAuction
-- createAuction
-- getAuctions
-- getAuction
-- getUsers
-- getUser
-- createUser
+
+URL | Método | Descripción
+--|:--:|--
+`/` | GET | Pantalla de inicio con login y registro
+`/users` | POST | Crea un nuevo usuario
+`/login` | POST | Se conecta al sistema
+`/profile` | GET | Información del usuario
+`/logout` | POST | Se desconecta del sistema
+`/create-auction` | GET | Devuelve el formulario para crear una subasta nueva
+`/create-auction` | POST | Crea una nueva subasta
+`/auctions` | GET | Obtiene todas las subastas disponibles
+`/auctions/{auction-id}` | GET | Obtiene la información de una subasta
+`/auctions/{auction-id}` | DELETE | Elimina una subasta
+`/auctions/{auction-id}` | POST | Actualiza la oferta de la subasta
+`/auctions/seller/{auction-id}` | POST | Termina una subasta
