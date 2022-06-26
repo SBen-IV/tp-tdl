@@ -228,7 +228,6 @@ func (app *AppController) GetAllAuctions(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *AppController) UpdateAuctionOffer(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	auction_id := params["auction-id"]
 

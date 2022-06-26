@@ -2,7 +2,6 @@ package token
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -49,9 +48,7 @@ func GetContent(r *http.Request, keys []string) (UserData, error) {
 	}
 
 	for _, key := range keys {
-		value := session.Values[key].(string)
-		fmt.Println(key, value)
-		data[key] = value
+		data[key] = session.Values[key].(string)
 	}
 
 	return data, nil
