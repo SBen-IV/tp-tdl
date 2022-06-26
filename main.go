@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bufio"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -55,14 +55,15 @@ func main() {
 		port = "8000"
 	}
 
-	go http.ListenAndServe(":"+port, r)
+	fmt.Println("Listening on port ", port)
+	http.ListenAndServe(":"+port, r)
 
-	scanner := bufio.NewScanner(os.Stdin)
+	/* scanner := bufio.NewScanner(os.Stdin)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "q" {
 			break
 		}
-	}
+	} */
 }
