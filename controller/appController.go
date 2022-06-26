@@ -155,10 +155,11 @@ func (app *AppController) GetAuctionForm(w http.ResponseWriter, r *http.Request)
 func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	curr_offer, _ := strconv.Atoi(r.FormValue("currentoffer"))
-	var is_timed model.AuctionType
+	var is_timed = false
+	var duration time.Duration = 0
 
 	if r.FormValue("auctionType") == "timed" {
-		var duration time.Duration
+		is_timed = true
 
 		switch r.FormValue("auctionLength") {
 		case "6h":
@@ -167,18 +168,6 @@ func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) 
 			duration = time.Minute
 		case "24h":
 			duration = time.Minute * 2
-		}
-
-		is_timed = &AuctionTime{
-			Start:    time.Now(),
-			Duration: duration,
-			IsOver:   false,
-			IsTimed:  true,
-		}
-	} else {
-		is_timed = &AuctionNoTime{
-			IsOver:  false,
-			IsTimed: false,
 		}
 	}
 
@@ -191,7 +180,12 @@ func (app *AppController) CreateAuction(w http.ResponseWriter, r *http.Request) 
 			UserID:       r.Header.Get("user_id"),
 			Username:     r.Header.Get("username"),
 		},
-		Type:     is_timed,
+		IsTimed: is_timed,
+		IsOver:  false,
+		Time: model.AuctionTime{
+			Start:    time.Now(),
+			Duration: duration,
+		},
 		ImageURL: r.FormValue("imageurl"),
 	}
 
@@ -241,7 +235,21 @@ func (app *AppController) UpdateAuctionOffer(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if !auction.Type.HasEnded() {
+	if auction.IsTimed {
+		timePassed := time.Since(auction.Time.Start)
+
+		fmt.Println(timePassed)
+		fmt.Println(timePassed > auction.Time.Duration)
+
+		auction.IsOver = timePassed > auction.Time.Duration
+
+		if auction.IsOver {
+			endAuction(app.db.auctionDB, auction.ID)
+		}
+	}
+
+	if !auction.IsOver {
+
 		offer, _ := strconv.Atoi(r.FormValue("offer"))
 
 		user_offer := UserOffer{

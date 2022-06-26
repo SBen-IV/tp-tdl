@@ -29,6 +29,7 @@
                         <p class="lead">{{.Description}}</p>
                         {{if .IsOver}}
                         {{else}}{{if .IsTimed}}
+                        <a href="/auctions/{{.ID}}"><button type="button" class="btn btn-info">Update price</button></a>
                         {{else}}
                         <div class="d-flex">
                           <form action="/auctions/seller/{{.ID}}" method="post">

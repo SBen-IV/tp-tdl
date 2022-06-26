@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"tp-tdl/model"
@@ -39,7 +40,6 @@ func getAuction(auctions *AuctionDB, auction_id string) (Auction, error) {
 
 	var auction Auction
 	result.Decode(&auction)
-
 	return auction, nil
 }
 
@@ -77,6 +77,19 @@ func updateAuctionOffer(auctions *AuctionDB, auction *Auction, user_offer UserOf
 
 func endAuction(auctions *AuctionDB, auction_id string) {
 	auctions.mu.Lock()
-	auctions.collection.UpdateOne(ctx, bson.M{"_id": auction_id}, bson.M{"$set": bson.M{"type": bson.M{"is_over": true}}})
+	auctions.collection.UpdateOne(ctx, bson.M{"_id": auction_id}, bson.M{"$set": bson.M{"is_over": true}})
 	auctions.mu.Unlock()
+}
+
+func (auc *Auction) UnmarshallJSON(b []byte) error {
+	auction := &json.RawMessage{}
+
+	err := json.Unmarshal(b, &auction)
+	fmt.Println(auction)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
