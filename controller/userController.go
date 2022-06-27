@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
-	"net/http"
 	"tp-tdl/model"
 
 	"github.com/segmentio/ksuid"
@@ -20,13 +20,13 @@ func isValidUser(user User) bool {
 	return true
 }
 
-func validateAndInsertUser(users *UserDB, newUser User) (int, string) {
+func validateAndInsertUser(users *UserDB, newUser User) error {
 	users.mu.Lock()
 	result := users.collection.FindOne(ctx, bson.M{"username": newUser.Username})
 
 	// User no existe, por lo tanto es válido
 	if result.Err() != mongo.ErrNoDocuments {
-		return http.StatusBadRequest, "Username ya existe"
+		return errors.New("username")
 	}
 
 	newUser.ID = ksuid.New().String()
@@ -36,22 +36,22 @@ func validateAndInsertUser(users *UserDB, newUser User) (int, string) {
 
 	if err != nil {
 		fmt.Println(err)
-		return http.StatusInternalServerError, "Internal error"
+		return errors.New("server")
 	}
 
-	return http.StatusOK, ""
+	return nil
 }
 
-func addNewUser(users *UserDB, newUser User) (int, string) {
+func addNewUser(users *UserDB, newUser User) error {
 	if !isValidUser(newUser) {
-		return http.StatusBadRequest, "Datos inválidos"
+		return errors.New("parameters")
 	}
 
-	if status, err := validateAndInsertUser(users, newUser); err != "" {
-		return status, err
+	if err := validateAndInsertUser(users, newUser); err != nil {
+		return err
 	}
 
-	return http.StatusOK, "OK"
+	return nil
 }
 
 func loginUser(users *UserDB, user User) string {

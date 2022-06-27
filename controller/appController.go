@@ -48,6 +48,7 @@ const (
 	tmpl_layout                = "layout"
 	tmpl_navbar                = "navbar"
 	tmpl_home                  = "index"
+	tmpl_register              = "registerResponse"
 	tmpl_main_hub              = "allAuctions"
 	tmpl_new_auction           = "newAuction"
 	tmpl_auction_detail        = "auctionDetail"
@@ -57,6 +58,7 @@ const (
 
 var templates = map[string]*template.Template{
 	tmpl_home:                  nil,
+	tmpl_register:              nil,
 	tmpl_main_hub:              nil,
 	tmpl_new_auction:           nil,
 	tmpl_auction_detail:        nil,
@@ -304,12 +306,21 @@ func (app *AppController) CreateUser(w http.ResponseWriter, r *http.Request) {
 		Password:  r.FormValue("password"),
 	}
 
-	fmt.Println(newUser.Firstname, newUser.Lastname, newUser.Username, newUser.Password)
+	err := addNewUser(app.db.userDB, newUser)
 
-	status, msg := addNewUser(app.db.userDB, newUser)
+	if err != nil {
+		header := http.StatusBadRequest
 
-	w.WriteHeader(status)
-	w.Write([]byte(msg))
+		if err.Error() == "server" {
+			header = http.StatusInternalServerError
+		}
+
+		w.WriteHeader(header)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	templates[tmpl_register].ExecuteTemplate(w, tmpl_layout, nil)
 }
 
 func (app *AppController) Login(w http.ResponseWriter, r *http.Request) {
